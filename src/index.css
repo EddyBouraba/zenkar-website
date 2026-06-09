@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-gold: #c9a84c;
+  --color-gold-light: #e8c56d;
+  --color-gold-dark: #8a6c2a;
+  --color-bg: #09080c;
+  --color-card: #0f0d14;
+  --color-surface: #161220;
+  --color-border: #252130;
+  --color-text: #c4bba8;
+  --color-muted: #6a6258;
+
+  --font-heading: "Cinzel", serif;
+  --font-body: "Inter", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: #09080c;
+  color: #c4bba8;
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #09080c; }
+::-webkit-scrollbar-thumb { background: #252130; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #c9a84c; }

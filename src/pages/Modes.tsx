@@ -1,0 +1,271 @@
+import {
+  Crown, TrendingUp, Hammer, Scroll, Shield, Target, Sparkles, Flame,
+  Leaf, Wrench, Droplets, Users, ShoppingBag, Landmark,
+  TreePine, Pickaxe, Fish,
+} from 'lucide-react'
+
+function SectionHeader({ title, right }: { title: string; right?: string }) {
+  return (
+    <div className="mb-6">
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="flex items-center gap-2">
+          <Crown size={14} className="text-gold" />
+          <h2 className="font-heading text-sm font-semibold text-gold tracking-widest uppercase">{title}</h2>
+        </div>
+        {right && <span className="text-xs text-muted">{right}</span>}
+      </div>
+      <div className="h-px" style={{ background: 'linear-gradient(to right, rgba(201,168,76,0.5), transparent)' }} />
+    </div>
+  )
+}
+
+const JOBS = [
+  { icon: Pickaxe,  name: 'Mineur',       color: 'text-stone-300',   bg: 'bg-stone-400/20',   desc: 'Extrayez minerais et pierres. La base de toute économie de ressources.' },
+  { icon: TreePine, name: 'Bûcheron',     color: 'text-green-300',   bg: 'bg-green-400/20',   desc: 'Récoltez le bois des forêts. Indispensable pour construction et artisanat.' },
+  { icon: Target,   name: 'Chasseur',     color: 'text-red-300',     bg: 'bg-red-400/20',     desc: "Éliminez des mobs hostiles et neutres. Sources de ressources rares et d'argent." },
+  { icon: Fish,     name: 'Pêcheur',      color: 'text-blue-300',    bg: 'bg-blue-400/20',    desc: 'Pêchez poissons et trésors cachés. Métier calme, très rentable au haut niveau.' },
+  { icon: Leaf,     name: 'Fermier',      color: 'text-lime-300',    bg: 'bg-lime-400/20',    desc: "Cultivez blé, canne à sucre, pommes de terre. Base de l'économie alimentaire." },
+  { icon: Wrench,   name: 'Artisan',      color: 'text-orange-300',  bg: 'bg-orange-400/20',  desc: 'Craftez équipements et objets finis. Transformez les ressources brutes en valeur.' },
+  { icon: Hammer,   name: 'Constructeur', color: 'text-amber-300',   bg: 'bg-amber-400/20',   desc: 'Posez des blocs, bâtissez des villes. Chaque bloc placé génère des revenus.' },
+  { icon: Sparkles, name: 'Enchanteur',   color: 'text-purple-300',  bg: 'bg-purple-400/20',  desc: 'Enchantez armes, armures et outils. Les objets puissants valent cher sur le marché.' },
+  { icon: Flame,    name: 'Forgeron',     color: 'text-yellow-300',  bg: 'bg-yellow-400/20',  desc: "Fondez minerais et forgez l'équipement. Synergie parfaite avec le Mineur." },
+]
+
+const GUILD_TIERS = [
+  { name: 'Campement',  cost: '1 000 $',   members: 5,  chunks: 5,   desc: 'Point de départ. Revendiquez votre territoire et recrutez vos premiers membres.' },
+  { name: 'Fort',       cost: '1 500 $',   members: 10, chunks: 15,  desc: 'Première évolution. Accueillez plus de membres, étendez vos frontières.' },
+  { name: 'Village',    cost: '4 000 $',   members: 20, chunks: 40,  desc: 'Communauté établie. Warp public disponible pour attirer commerçants et visiteurs.' },
+  { name: 'Bastion',    cost: '8 000 $',   members: 35, chunks: 80,  desc: 'Puissance militaire reconnue. Déclaration de guerre possible.' },
+  { name: 'Forteresse', cost: '15 000 $',  members: 50, chunks: 150, desc: 'Sommet de la hiérarchie. Domination économique et territoriale totale.' },
+]
+
+const ROLES = [
+  { name: 'Fondateur',  desc: 'Propriétaire de la ville. Droits absolus sur le territoire et les membres.' },
+  { name: 'Gouverneur', desc: 'Gestion avancée : invitations, taxes, permissions de zone.' },
+  { name: 'Maire',      desc: 'Gestion courante des résidents et des zones publiques.' },
+  { name: 'Résident',   desc: 'Membre de confiance. Accès aux zones partagées de la ville.' },
+  { name: 'Visiteur',   desc: 'Accès limité, défini par les permissions de la ville.' },
+]
+
+const CLAIM_CHUNKS = [
+  { grade: 'Joueur',     chunks: 10,  color: 'text-text' },
+  { grade: 'Pionnier',   chunks: 25,  color: 'text-emerald-400' },
+  { grade: 'Vétéran',    chunks: 50,  color: 'text-blue-400' },
+  { grade: 'Conquérant', chunks: 80,  color: 'text-gold' },
+  { grade: 'Légende',    chunks: 150, color: 'text-purple-400' },
+]
+
+export default function Modes() {
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+
+      {/* Intro */}
+      <div className="mb-10">
+        <SectionHeader title="Modes & Systèmes" />
+        <p className="text-muted text-sm leading-relaxed max-w-3xl">
+          Zenkar est un SMP semi-RP médiéval avec des saisons de 8 à 12 mois. Le monde est reseté à chaque saison, mais vos grades Tebex et titres legacy restent à vie.
+          Six systèmes interconnectés composent l'expérience de jeu.
+        </p>
+      </div>
+
+      {/* ── Métiers ───────────────────────────────────────────────────── */}
+      <section className="mb-14">
+        <SectionHeader title="Métiers" right="9 métiers · max 2 simultanés" />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
+          {JOBS.map(({ icon: Icon, name, color, bg, desc }) => (
+            <div key={name} className="flex items-start gap-3 p-4 rounded border border-border bg-card hover:border-gold/30 transition-colors">
+              <div className={`w-8 h-8 rounded flex items-center justify-center flex-shrink-0 ${bg}`}>
+                <Icon size={16} className={color} />
+              </div>
+              <div>
+                <p className="text-text text-sm font-semibold">{name}</p>
+                <p className="text-muted text-xs leading-relaxed mt-0.5">{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { value: '2 max',   label: 'métiers simultanés' },
+            { value: '4.5×',    label: 'revenus au niveau 100' },
+            { value: '7 jours', label: 'cooldown pour quitter' },
+          ].map(({ value, label }) => (
+            <div key={label} className="p-4 rounded border border-border bg-card text-center">
+              <p className="font-heading font-bold text-gold text-lg">{value}</p>
+              <p className="text-xs text-muted mt-1">{label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Villes & Guildes ──────────────────────────────────────────── */}
+      <section className="mb-14">
+        <SectionHeader title="Villes & Guildes" right="Lands + Guilds" />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+          {/* Rôles */}
+          <div>
+            <p className="text-[10px] text-muted uppercase tracking-widest mb-3">Rôles de gouvernance</p>
+            <div className="rounded border border-border overflow-hidden">
+              {ROLES.map((role, i) => (
+                <div key={role.name}
+                  className={`flex items-start gap-4 px-4 py-3 ${i !== ROLES.length - 1 ? 'border-b border-border/50' : ''}`}>
+                  <span className="font-heading text-xs font-bold text-gold w-24 flex-shrink-0 pt-px">{role.name}</span>
+                  <span className="text-xs text-muted leading-relaxed">{role.desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Chunks par grade */}
+          <div>
+            <p className="text-[10px] text-muted uppercase tracking-widest mb-3">Chunks de claim par grade</p>
+            <div className="rounded border border-border overflow-hidden">
+              {CLAIM_CHUNKS.map((row, i) => (
+                <div key={row.grade}
+                  className={`flex items-center justify-between px-4 py-3 ${i % 2 === 0 ? 'bg-surface/30' : ''}`}>
+                  <span className={`font-heading text-xs font-bold ${row.color}`}>{row.grade}</span>
+                  <span className="text-xs text-text font-medium">{row.chunks} chunks</span>
+                </div>
+              ))}
+              <div className="px-4 py-2 bg-surface/50 border-t border-border">
+                <p className="text-[10px] text-muted">Coût d'entretien : 3 $ / chunk / semaine</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Progression des guildes */}
+        <p className="text-[10px] text-muted uppercase tracking-widest mb-3">Progression des guildes</p>
+        <div className="rounded border border-border overflow-hidden">
+          <table className="w-full min-w-[540px]">
+            <thead>
+              <tr className="border-b border-border bg-surface/40">
+                <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Tier</th>
+                <th className="text-center px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Coût</th>
+                <th className="text-center px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Membres</th>
+                <th className="text-center px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Chunks</th>
+                <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest hidden md:table-cell">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {GUILD_TIERS.map((tier, i) => (
+                <tr key={tier.name} className={i % 2 === 0 ? 'bg-card/40' : ''}>
+                  <td className="px-4 py-3 font-heading text-sm font-bold text-gold">{tier.name}</td>
+                  <td className="px-4 py-3 text-xs text-text text-center">{tier.cost}</td>
+                  <td className="px-4 py-3 text-xs text-text text-center">{tier.members}</td>
+                  <td className="px-4 py-3 text-xs text-text text-center">{tier.chunks}</td>
+                  <td className="px-4 py-3 text-xs text-muted hidden md:table-cell">{tier.desc}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* ── Économie ──────────────────────────────────────────────────── */}
+      <section className="mb-14">
+        <SectionHeader title="Économie" right="$ Zenkar" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            { icon: TrendingUp,  color: 'text-green-300',  bg: 'bg-green-400/20',  title: 'Revenus par métier',   desc: 'Gagnez des $ Zenkar en pratiquant vos métiers. De 80 $/h au niveau 1 jusqu\'à 585 $/h au niveau 100.' },
+            { icon: ShoppingBag, color: 'text-amber-300',  bg: 'bg-amber-400/20',  title: 'Boutiques joueurs',    desc: 'Créez votre propre boutique en jeu avec QuickShop. Vendez vos ressources aux autres joueurs en temps réel.' },
+            { icon: Landmark,    color: 'text-blue-300',   bg: 'bg-blue-400/20',   title: 'Marché global (/ah)',   desc: 'Accédez au marché global. Enchérissez sur des items rares ou vendez au meilleur prix du serveur.' },
+          ].map(({ icon: Icon, color, bg, title, desc }) => (
+            <div key={title} className="p-5 rounded border border-border bg-card">
+              <div className={`w-9 h-9 rounded flex items-center justify-center mb-3 ${bg}`}>
+                <Icon size={18} className={color} />
+              </div>
+              <p className="text-text text-sm font-semibold mb-1.5">{title}</p>
+              <p className="text-muted text-xs leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── PvP & Arènes ──────────────────────────────────────────────── */}
+      <section className="mb-14">
+        <SectionHeader title="PvP & Arènes" right="PvP off en monde principal" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <div className="space-y-3">
+            {[
+              { title: 'PvP désactivé hors arènes',  desc: 'Le PvP est off dans tout le monde principal. Tu es en sécurité dans ton claim, en ville ou en wilderness.' },
+              { title: 'Système de drop',             desc: 'En arène, le vaincu perd 15 % de son argent en poche et lâche sa tête (cosmétique collectible).' },
+              { title: 'Guerres de guildes',          desc: "Deux guildes peuvent se déclarer la guerre. Le PvP s'active alors entre leurs membres partout dans le monde." },
+            ].map(({ title, desc }) => (
+              <div key={title} className="p-4 rounded border border-border bg-card">
+                <p className="text-text text-sm font-semibold mb-1">{title}</p>
+                <p className="text-muted text-xs leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <p className="text-[10px] text-muted uppercase tracking-widest mb-3">3 arènes thématiques</p>
+            <div className="space-y-2">
+              {[
+                { icon: Droplets, name: 'Arène des Glaces', color: 'text-cyan-300',    bg: 'bg-cyan-400/20',    desc: 'Terrain gelé, visibilité réduite. Combat corps-à-corps privilégié.' },
+                { icon: Flame,    name: 'Arène du Nether',  color: 'text-orange-300',  bg: 'bg-orange-400/20',  desc: 'Plateformes de Netherrack, lave en contrebas. Risque permanent de chute.' },
+                { icon: Sparkles, name: "Arène de l'End",   color: 'text-purple-300',  bg: 'bg-purple-400/20',  desc: 'Combat au-dessus du vide. Un faux pas et c\'est la mort instantanée.' },
+              ].map(({ icon: Icon, name, color, bg, desc }) => (
+                <div key={name} className="flex items-start gap-3 p-4 rounded border border-border bg-card">
+                  <div className={`w-8 h-8 rounded flex items-center justify-center flex-shrink-0 ${bg}`}>
+                    <Icon size={16} className={color} />
+                  </div>
+                  <div>
+                    <p className="text-text text-sm font-semibold">{name}</p>
+                    <p className="text-muted text-xs leading-relaxed mt-0.5">{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── RP & Lore ─────────────────────────────────────────────────── */}
+      <section className="mb-14">
+        <SectionHeader title="RP & Lore" right="Saisons 8–12 mois" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            { icon: Scroll,  color: 'text-amber-300',  bg: 'bg-amber-400/20',  title: 'Saisons longues',    desc: 'Chaque saison dure 8 à 12 mois. Le monde est reseté mais grades et titres legacy restent permanents.' },
+            { icon: Crown,   color: 'text-gold',        bg: 'bg-gold/20',        title: 'Titres legacy',      desc: 'Les joueurs actifs obtiennent "Vétéran Saison X". Un titre permanent affiché à côté de votre nom en jeu.' },
+            { icon: Users,   color: 'text-indigo-300', bg: 'bg-indigo-400/20', title: 'Histoire partagée',  desc: "Le lore est construit par les joueurs. Vos guerres, alliances et trahisons font partie de l'histoire de Zenkar." },
+          ].map(({ icon: Icon, color, bg, title, desc }) => (
+            <div key={title} className="p-5 rounded border border-border bg-card">
+              <div className={`w-9 h-9 rounded flex items-center justify-center mb-3 ${bg}`}>
+                <Icon size={18} className={color} />
+              </div>
+              <p className="text-text text-sm font-semibold mb-1.5">{title}</p>
+              <p className="text-muted text-xs leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Protection & Claim ────────────────────────────────────────── */}
+      <section className="mb-8">
+        <SectionHeader title="Protection & Claim" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[
+            { icon: Shield, color: 'text-blue-300',  bg: 'bg-blue-400/20',  title: 'Anti-grief total',      desc: 'Aucun joueur ne peut détruire ou placer dans ton claim sans permission explicite. Logs complets via Prism pour rollback en cas de problème.' },
+            { icon: Leaf,   color: 'text-green-300', bg: 'bg-green-400/20', title: '/fly dans ton claim',   desc: 'Les grades Conquérant et Légende peuvent voler dans leur propre claim et ceux qui leur font confiance. Désactivé en wilderness.' },
+          ].map(({ icon: Icon, color, bg, title, desc }) => (
+            <div key={title} className="p-5 rounded border border-border bg-card">
+              <div className={`w-9 h-9 rounded flex items-center justify-center mb-3 ${bg}`}>
+                <Icon size={18} className={color} />
+              </div>
+              <p className="text-text text-sm font-semibold mb-1.5">{title}</p>
+              <p className="text-muted text-xs leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+    </div>
+  )
+}
