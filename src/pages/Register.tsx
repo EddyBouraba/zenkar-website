@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Crown, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { apiRegister } from '../hooks/useAuth'
 
 const DISCORD_SVG = (
   <svg width="18" height="14" viewBox="0 0 127.14 96.36" fill="currentColor">
@@ -21,8 +22,11 @@ function getAge(dob: string) {
 }
 
 export default function Register() {
+  const navigate = useNavigate()
   const [showPwd, setShowPwd] = useState(false)
   const [f, setF] = useState({ username: '', email: '', password: '', confirm: '', dob: '' })
+  const [apiError, setApiError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const update = (k: string, v: string) => setF(p => ({ ...p, [k]: v }))
 
   const strength = pwdStrength(f.password)
@@ -64,7 +68,33 @@ export default function Register() {
             <div className="flex-1 h-px bg-border" />
           </div>
 
-          <form className="space-y-4" onSubmit={e => e.preventDefault()}>
+          {apiError && (
+            <div className="flex items-center gap-2 p-3 rounded border border-red-500/30 bg-red-500/10 mb-4">
+              <AlertCircle size={14} className="text-red-400 flex-shrink-0" />
+              <p className="text-xs text-red-400">{apiError}</p>
+            </div>
+          )}
+
+          <form className="space-y-4" onSubmit={async e => {
+            e.preventDefault()
+            if (pwdMismatch || ageError) return
+            setApiError('')
+            setSubmitting(true)
+            try {
+              await apiRegister({
+                username: f.username,
+                email: f.email,
+                password: f.password,
+                date_of_birth: f.dob,
+                turnstile_token: 'bypass',
+              })
+              navigate('/')
+            } catch (err: any) {
+              setApiError(err.message)
+            } finally {
+              setSubmitting(false)
+            }
+          }}>
 
             {/* Username */}
             <div>
@@ -171,9 +201,10 @@ export default function Register() {
 
             <button
               type="submit"
+              disabled={submitting || pwdMismatch || ageError}
               className="w-full py-2.5 rounded bg-gold hover:bg-gold-light text-bg font-medium text-sm transition-colors disabled:opacity-50"
             >
-              Créer mon compte
+              {submitting ? 'Création...' : 'Créer mon compte'}
             </button>
           </form>
         </div>

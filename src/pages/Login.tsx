@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Crown, Eye, EyeOff } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Crown, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { apiLogin } from '../hooks/useAuth'
 
 const DISCORD_SVG = (
   <svg width="18" height="14" viewBox="0 0 127.14 96.36" fill="currentColor">
@@ -9,7 +10,26 @@ const DISCORD_SVG = (
 )
 
 export default function Login() {
+  const navigate = useNavigate()
   const [showPwd, setShowPwd] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      await apiLogin(email, password)
+      navigate('/')
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
@@ -38,13 +58,23 @@ export default function Login() {
             <div className="flex-1 h-px bg-border" />
           </div>
 
-          <form className="space-y-4" onSubmit={e => e.preventDefault()}>
+          {error && (
+            <div className="flex items-center gap-2 p-3 rounded border border-red-500/30 bg-red-500/10 mb-4">
+              <AlertCircle size={14} className="text-red-400 flex-shrink-0" />
+              <p className="text-xs text-red-400">{error}</p>
+            </div>
+          )}
+
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
               <label className="block text-xs text-muted mb-1.5">Email</label>
               <input
                 type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 autoComplete="email"
                 placeholder="ton@email.com"
+                required
                 className="w-full px-3 py-2.5 rounded border border-border bg-surface text-text text-sm placeholder:text-muted/40 focus:outline-none focus:border-gold/50 transition-colors"
               />
             </div>
@@ -52,15 +82,15 @@ export default function Login() {
             <div>
               <div className="flex justify-between mb-1.5">
                 <label className="text-xs text-muted">Mot de passe</label>
-                <button type="button" className="text-xs text-gold hover:text-gold-light transition-colors">
-                  Mot de passe oublié ?
-                </button>
               </div>
               <div className="relative">
                 <input
                   type={showPwd ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
                   autoComplete="current-password"
                   placeholder="••••••••"
+                  required
                   className="w-full px-3 py-2.5 pr-10 rounded border border-border bg-surface text-text text-sm placeholder:text-muted/40 focus:outline-none focus:border-gold/50 transition-colors"
                 />
                 <button
@@ -75,9 +105,10 @@ export default function Login() {
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded bg-gold hover:bg-gold-light text-bg font-medium text-sm transition-colors"
+              disabled={loading}
+              className="w-full py-2.5 rounded bg-gold hover:bg-gold-light text-bg font-medium text-sm transition-colors disabled:opacity-50"
             >
-              Se connecter
+              {loading ? 'Connexion...' : 'Se connecter'}
             </button>
           </form>
         </div>
