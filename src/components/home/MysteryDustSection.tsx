@@ -35,7 +35,7 @@ export default function MysteryDustSection() {
 
           <div className="flex-shrink-0">
             <a
-              href="https://shop.zenkar.fr"
+              href="https://zenkar-server.tebex.io/category/mystery-dust"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 rounded border border-gold/40 text-gold hover:bg-gold/10 text-sm font-medium transition-colors"

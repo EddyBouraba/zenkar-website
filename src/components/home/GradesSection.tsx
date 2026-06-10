@@ -1,10 +1,10 @@
 import { Check, Minus, Crown, Shield, Sparkles } from 'lucide-react'
 
 const GRADES = [
-  { id: 'pionnier',   name: 'Pionnier',   price: '4,99 €', iconColor: 'text-emerald-400', colBg: '',          border: 'border-emerald-400/20', popular: false, link: 'https://shop.zenkar.fr' },
-  { id: 'veteran',    name: 'Vétéran',    price: '12 €',   iconColor: 'text-blue-400',    colBg: '',          border: 'border-blue-400/20',    popular: false, link: 'https://shop.zenkar.fr' },
-  { id: 'conquerant', name: 'Conquérant', price: '20 €',   iconColor: 'text-gold',        colBg: '',          border: 'border-gold/20',        popular: true,  link: 'https://shop.zenkar.fr' },
-  { id: 'legende',    name: 'Légende',    price: '35 €',   iconColor: 'text-purple-400',  colBg: '',          border: 'border-purple-400/20',  popular: false, link: 'https://shop.zenkar.fr' },
+  { id: 'pionnier',   name: 'Pionnier',   price: '4,99 €', iconColor: 'text-emerald-400', colBg: '',          border: 'border-emerald-400/20', popular: false, link: 'https://zenkar-server.tebex.io/category/3336199' },
+  { id: 'veteran',    name: 'Vétéran',    price: '12 €',   iconColor: 'text-blue-400',    colBg: '',          border: 'border-blue-400/20',    popular: false, link: 'https://zenkar-server.tebex.io/category/3336199' },
+  { id: 'conquerant', name: 'Conquérant', price: '20 €',   iconColor: 'text-gold',        colBg: '',          border: 'border-gold/20',        popular: true,  link: 'https://zenkar-server.tebex.io/category/3336199' },
+  { id: 'legende',    name: 'Légende',    price: '35 €',   iconColor: 'text-purple-400',  colBg: '',          border: 'border-purple-400/20',  popular: false, link: 'https://zenkar-server.tebex.io/category/3336199' },
 ]
 
 const GRADE_ICONS: Record<string, typeof Crown> = {

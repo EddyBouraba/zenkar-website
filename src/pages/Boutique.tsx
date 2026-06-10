@@ -21,7 +21,7 @@ export default function Boutique() {
               <h1 className="font-heading text-sm font-semibold text-gold tracking-widest uppercase">Boutique</h1>
             </div>
             <a
-              href="https://shop.zenkar.fr"
+              href="https://zenkar-server.tebex.io/"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-gold transition-colors"
