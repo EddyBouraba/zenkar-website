@@ -4,7 +4,7 @@
 - [ ] **Reset de mot de passe** — choisir un service email (SMTP OVH, Resend, Mailgun...) et configurer `SMTP_*` dans `backend/.env`
 - [ ] **Liens réseaux sociaux** — remplacer les `href="#"` dans `src/components/home/NewsSection.tsx` (Discord, YouTube, TikTok, Twitter)
 - [ ] **Lien Discord** dans le règlement (`src/pages/Regles.tsx` ligne ~123) — remplacer `href="#"` par le vrai lien d'invitation
-- [ ] **Google Search Console** — déclarer le sitemap dynamique : `https://api.zenkar.fr/sitemap.xml`
+- [x] **Google Search Console** — sitemap `https://api.zenkar.fr/sitemap.xml` soumis, 8 pages découvertes
 - [ ] **`hide-online-players=false`** dans `server.properties` sur le VPS Minecraft pour afficher le vrai compteur de joueurs
 
 ## À faire côté code
