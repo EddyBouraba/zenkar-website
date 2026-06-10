@@ -123,7 +123,7 @@ export default function Profile() {
         </div>
         <div className="ml-auto flex items-center gap-2">
           <GradeBadge grade={user.grade} size="md" />
-          {user.is_admin && (
+          {user.is_admin && user.grade !== 'fondateur' && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm border border-red-500/25 bg-red-500/10 text-red-400 text-xs">
               <Shield size={11} />
               Admin
