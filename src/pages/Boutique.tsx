@@ -1,10 +1,16 @@
 import GradesSection from '../components/home/GradesSection'
 import MysteryDustSection from '../components/home/MysteryDustSection'
 import { Crown, ExternalLink } from 'lucide-react'
+import SEO from '../components/SEO'
 
 export default function Boutique() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <SEO
+        title="Boutique"
+        description="Grades permanents et cosmétiques exclusifs pour Zenkar. Achat unique, aucun abonnement, 100 % non pay-to-win. Conquérant, Légende et bien plus."
+        canonical="/boutique"
+      />
 
       {/* Header */}
       <div className="mb-8">

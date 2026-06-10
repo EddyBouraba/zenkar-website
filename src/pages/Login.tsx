@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Crown, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { Turnstile } from '@marsidev/react-turnstile'
+import type { TurnstileInstance } from '@marsidev/react-turnstile'
 import { apiLogin, useAuth } from '../hooks/useAuth'
 
 const DISCORD_SVG = (
@@ -9,27 +11,34 @@ const DISCORD_SVG = (
   </svg>
 )
 
+const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string
+
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
   const { refreshUser } = useAuth()
   const from = (location.state as any)?.from ?? '/'
+  const turnstileRef = useRef<TurnstileInstance>(null)
   const [showPwd, setShowPwd] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (SITE_KEY && !turnstileToken) return
     setError('')
     setLoading(true)
     try {
-      await apiLogin(email, password)
+      await apiLogin(email, password, turnstileToken ?? undefined)
       await refreshUser()
       navigate(from, { replace: true })
     } catch (err: any) {
       setError(err.message)
+      turnstileRef.current?.reset()
+      setTurnstileToken(null)
     } finally {
       setLoading(false)
     }
@@ -107,9 +116,21 @@ export default function Login() {
               </div>
             </div>
 
+            {/* Turnstile invisible */}
+            {SITE_KEY && (
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={SITE_KEY}
+                onSuccess={setTurnstileToken}
+                onExpire={() => setTurnstileToken(null)}
+                onError={() => setTurnstileToken(null)}
+                options={{ theme: 'dark', size: 'invisible' }}
+              />
+            )}
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (!!SITE_KEY && !turnstileToken)}
               className="w-full py-2.5 rounded bg-gold hover:bg-gold-light text-bg font-medium text-sm transition-colors disabled:opacity-50"
             >
               {loading ? 'Connexion...' : 'Se connecter'}

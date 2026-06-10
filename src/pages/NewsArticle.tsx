@@ -4,6 +4,7 @@ import { Crown, ArrowLeft, Calendar } from 'lucide-react'
 import DOMPurify from 'dompurify'
 import { API_BASE } from '../lib/api'
 import type { NewsArticle } from '../lib/api'
+import SEO from '../components/SEO'
 
 const CAT_LABELS: Record<string, string> = {
   annonce: 'Annonce', event: 'Événement', update: 'Mise à jour', communaute: 'Communauté',
@@ -50,8 +51,48 @@ export default function NewsArticlePage() {
     ? `${API_BASE}${article.image_url}`
     : article.image_url
 
+  const CAT_SECTION: Record<string, string> = {
+    annonce: 'Annonce', event: 'Événement', update: 'Mise à jour', communaute: 'Communauté',
+  }
+
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.excerpt,
+    url: `https://zenkar.fr/news/${article.slug}`,
+    datePublished: article.created_at,
+    image: imageUrl || 'https://zenkar.fr/og-default.jpg',
+    author: {
+      '@type': 'Organization',
+      name: 'Équipe Zenkar',
+      url: 'https://zenkar.fr',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Zenkar',
+      url: 'https://zenkar.fr',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://zenkar.fr/favicon.svg',
+      },
+    },
+  }
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
+      <SEO
+        title={article.title}
+        description={article.excerpt}
+        canonical={`/news/${article.slug}`}
+        ogImage={imageUrl || undefined}
+        ogType="article"
+        article={{
+          publishedTime: article.created_at,
+          section: CAT_SECTION[article.category],
+        }}
+        jsonLd={articleJsonLd}
+      />
 
       {/* Retour */}
       <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-text transition-colors mb-6">

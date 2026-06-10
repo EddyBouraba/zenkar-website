@@ -56,6 +56,7 @@ class UserResponse(BaseModel):
     minecraft_username: str | None
     minecraft_uuid: str | None
     minecraft_linked_at: datetime | None
+    grade: str | None
     is_admin: bool
     created_at: datetime
 

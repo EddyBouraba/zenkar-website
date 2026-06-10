@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Crown, Eye, EyeOff, AlertCircle } from 'lucide-react'
-import { apiRegister, useAuth } from '../hooks/useAuth'
+import { Turnstile } from '@marsidev/react-turnstile'
+import type { TurnstileInstance } from '@marsidev/react-turnstile'
+import { apiRegister, useAuth, ApiError } from '../hooks/useAuth'
+import type { FieldErrors } from '../hooks/useAuth'
 
 const DISCORD_SVG = (
   <svg width="18" height="14" viewBox="0 0 127.14 96.36" fill="currentColor">
@@ -21,14 +24,31 @@ function getAge(dob: string) {
   return a
 }
 
+function FieldError({ msg }: { msg?: string }) {
+  if (!msg) return null
+  return (
+    <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
+      <AlertCircle size={11} className="flex-shrink-0" /> {msg}
+    </p>
+  )
+}
+
+const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string
+
 export default function Register() {
   const navigate = useNavigate()
   const { refreshUser } = useAuth()
+  const turnstileRef = useRef<TurnstileInstance>(null)
   const [showPwd, setShowPwd] = useState(false)
   const [f, setF] = useState({ username: '', email: '', password: '', confirm: '', dob: '' })
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [apiError, setApiError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [submitting, setSubmitting] = useState(false)
-  const update = (k: string, v: string) => setF(p => ({ ...p, [k]: v }))
+  const update = (k: string, v: string) => {
+    setF(p => ({ ...p, [k]: v }))
+    setFieldErrors(p => ({ ...p, [k]: '' }))
+  }
 
   const strength = pwdStrength(f.password)
   const strengthColors = ['bg-border', 'bg-red-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500']
@@ -37,6 +57,7 @@ export default function Register() {
   const pwdMismatch = f.confirm.length > 0 && f.password !== f.confirm
   const ageError = f.dob !== '' && getAge(f.dob) < 13
 
+  const hasErr = (k: string) => !!(fieldErrors[k])
   const inputCls = (err = false) =>
     `w-full px-3 py-2.5 rounded border bg-surface text-text text-sm placeholder:text-muted/40 focus:outline-none transition-colors ${
       err ? 'border-red-500/50 focus:border-red-500/70' : 'border-border focus:border-gold/50'
@@ -78,8 +99,9 @@ export default function Register() {
 
           <form className="space-y-4" onSubmit={async e => {
             e.preventDefault()
-            if (pwdMismatch || ageError) return
+            if (pwdMismatch || ageError || !turnstileToken) return
             setApiError('')
+            setFieldErrors({})
             setSubmitting(true)
             try {
               await apiRegister({
@@ -87,12 +109,19 @@ export default function Register() {
                 email: f.email,
                 password: f.password,
                 date_of_birth: f.dob,
-                turnstile_token: 'bypass', // TODO: remplacer par le vrai widget Turnstile Cloudflare
+                turnstile_token: turnstileToken,
               })
               await refreshUser()
               navigate('/')
-            } catch (err: any) {
-              setApiError(err.message)
+            } catch (err) {
+              if (err instanceof ApiError) {
+                setFieldErrors(err.fields)
+                if (!Object.keys(err.fields).length) setApiError(err.message)
+              } else {
+                setApiError('Une erreur est survenue')
+              }
+              turnstileRef.current?.reset()
+              setTurnstileToken(null)
             } finally {
               setSubmitting(false)
             }
@@ -108,9 +137,12 @@ export default function Register() {
                 placeholder="TonPseudo"
                 minLength={3}
                 maxLength={20}
-                className={inputCls()}
+                className={inputCls(hasErr('username'))}
               />
-              <p className="text-xs text-muted mt-1">3–20 caractères · lettres, chiffres, underscore</p>
+              <FieldError msg={fieldErrors['username']} />
+              {!fieldErrors['username'] && (
+                <p className="text-xs text-muted mt-1">3–20 caractères · lettres, chiffres, underscore</p>
+              )}
             </div>
 
             {/* Email */}
@@ -122,8 +154,9 @@ export default function Register() {
                 onChange={e => update('email', e.target.value)}
                 autoComplete="email"
                 placeholder="ton@email.com"
-                className={inputCls()}
+                className={inputCls(hasErr('email'))}
               />
+              <FieldError msg={fieldErrors['email']} />
             </div>
 
             {/* Password */}
@@ -136,7 +169,7 @@ export default function Register() {
                   onChange={e => update('password', e.target.value)}
                   autoComplete="new-password"
                   placeholder="••••••••"
-                  className={inputCls() + ' pr-10'}
+                  className={inputCls(hasErr('password')) + ' pr-10'}
                 />
                 <button
                   type="button"
@@ -159,6 +192,7 @@ export default function Register() {
                   <p className="text-xs text-muted">{strengthLabels[strength]}</p>
                 </div>
               )}
+              <FieldError msg={fieldErrors['password']} />
             </div>
 
             {/* Confirm */}
@@ -173,9 +207,7 @@ export default function Register() {
                 className={inputCls(pwdMismatch)}
               />
               {pwdMismatch && (
-                <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
-                  <AlertCircle size={11} /> Les mots de passe ne correspondent pas
-                </p>
+                <FieldError msg="Les mots de passe ne correspondent pas" />
               )}
             </div>
 
@@ -187,23 +219,29 @@ export default function Register() {
                 value={f.dob}
                 onChange={e => update('dob', e.target.value)}
                 max={new Date().toISOString().split('T')[0]}
-                className={inputCls(ageError) + ' [color-scheme:dark]'}
+                className={inputCls(ageError || hasErr('date_of_birth')) + ' [color-scheme:dark]'}
               />
-              {ageError && (
-                <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
-                  <AlertCircle size={11} /> Tu dois avoir au moins 13 ans pour t'inscrire.
-                </p>
-              )}
+              {ageError
+                ? <FieldError msg="Tu dois avoir au moins 13 ans pour t'inscrire." />
+                : <FieldError msg={fieldErrors['date_of_birth']} />
+              }
             </div>
 
-            {/* Turnstile placeholder */}
-            <div className="h-16 rounded border border-border bg-surface flex items-center justify-center">
-              <p className="text-xs text-muted">Vérification Cloudflare Turnstile</p>
-            </div>
+            {/* Turnstile */}
+            {SITE_KEY && (
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={SITE_KEY}
+                onSuccess={setTurnstileToken}
+                onExpire={() => setTurnstileToken(null)}
+                onError={() => setTurnstileToken(null)}
+                options={{ theme: 'dark', size: 'invisible' }}
+              />
+            )}
 
             <button
               type="submit"
-              disabled={submitting || pwdMismatch || ageError}
+              disabled={submitting || pwdMismatch || ageError || (!!SITE_KEY && !turnstileToken)}
               className="w-full py-2.5 rounded bg-gold hover:bg-gold-light text-bg font-medium text-sm transition-colors disabled:opacity-50"
             >
               {submitting ? 'Création...' : 'Créer mon compte'}

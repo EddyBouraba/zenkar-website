@@ -16,6 +16,8 @@ import Placeholder from './pages/Placeholder'
 import Profile from './pages/Profile'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import NewsArticle from './pages/NewsArticle'
+import NotFound from './pages/NotFound'
+import Regles from './pages/Regles'
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -60,14 +62,12 @@ function AppLayout() {
             path="/wiki"
             element={<Placeholder title="Wiki" subtitle="Le wiki communautaire arrive après le lancement." icon="wiki" />}
           />
-          <Route
-            path="/regles"
-            element={<Placeholder title="Règles" subtitle="Les règles du serveur seront publiées au lancement officiel." icon="help" />}
-          />
+          <Route path="/regles" element={<Regles />} />
           <Route
             path="/support"
             element={<Placeholder title="Support" subtitle="Pour toute question, rejoins le Discord et ouvre un ticket." icon="help" />}
           />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       <Footer />

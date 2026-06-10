@@ -22,6 +22,8 @@ class User(Base):
     minecraft_uuid: Mapped[str | None] = mapped_column(String(36), nullable=True)
     minecraft_linked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    grade: Mapped[str | None] = mapped_column(String(20), nullable=True)  # pionnier | veteran | conquerant | legende | vip
+
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

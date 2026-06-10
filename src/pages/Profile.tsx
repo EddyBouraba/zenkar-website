@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Crown, User, Mail, Calendar, LogOut, Shield, Sword, Check, AlertCircle, X } from 'lucide-react'
+import { User, Mail, Calendar, LogOut, Shield, Sword, Check, AlertCircle, X } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { API_BASE } from '../lib/api'
+import GradeBadge from '../components/GradeBadge'
 
 const DISCORD_SVG = (
   <svg width="14" height="11" viewBox="0 0 127.14 96.36" fill="currentColor">
@@ -99,11 +100,20 @@ export default function Profile() {
           <h1 className="font-heading text-xl font-bold text-gold-light">{user.username}</h1>
           <p className="text-xs text-muted mt-0.5">Membre depuis le {formatDate(user.created_at)}</p>
         </div>
-        <div className="ml-auto">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm border border-gold/25 bg-gold/10 text-gold/80 text-xs">
-            <Crown size={11} />
-            Fondateur
-          </span>
+        <div className="ml-auto flex items-center gap-2">
+          <GradeBadge grade={user.grade} size="md" />
+          {user.is_admin && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm border border-red-500/25 bg-red-500/10 text-red-400 text-xs">
+              <Shield size={11} />
+              Admin
+            </span>
+          )}
+          {!user.is_admin && !user.grade && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm border border-border bg-surface text-muted text-xs">
+              <User size={11} />
+              Joueur
+            </span>
+          )}
         </div>
       </div>
 

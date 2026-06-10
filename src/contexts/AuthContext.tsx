@@ -12,6 +12,7 @@ export interface User {
   minecraft_username: string | null
   minecraft_uuid: string | null
   minecraft_linked_at: string | null
+  grade: string | null
   is_admin: boolean
   created_at: string
 }

@@ -1,4 +1,5 @@
 import { Crown, Sparkles, ExternalLink, Check } from 'lucide-react'
+import SEO from '../components/SEO'
 
 const VOTE_SITES = [
   {
@@ -37,6 +38,11 @@ const STEPS = [
 export default function Vote() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <SEO
+        title="Voter pour Zenkar"
+        description="Vote pour Zenkar sur 4 sites de classement Minecraft et reçois +100 Mystery Dust par vote. Aide le serveur à grandir et gagne des cosmétiques."
+        canonical="/vote"
+      />
 
       {/* Header */}
       <div className="mb-8">

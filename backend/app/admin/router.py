@@ -1,10 +1,16 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from app.database import get_db
 from app.models import User, News
 from app.schemas import UserResponse, NewsResponse
 from app.auth.utils import require_admin
+
+VALID_GRADES = {None, 'pionnier', 'veteran', 'conquerant', 'legende', 'vip'}
+
+class SetGradeRequest(BaseModel):
+    grade: str | None = None
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -51,9 +57,27 @@ async def toggle_admin(
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user or user.id == current_user.id:
-        from fastapi import HTTPException
         raise HTTPException(status_code=400, detail="Action impossible")
     user.is_admin = not user.is_admin
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
+@router.patch("/users/{user_id}/grade", response_model=UserResponse)
+async def set_grade(
+    user_id: str,
+    body: SetGradeRequest,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    if body.grade not in VALID_GRADES:
+        raise HTTPException(status_code=400, detail="Grade invalide")
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+    user.grade = body.grade
     await db.commit()
     await db.refresh(user)
     return user

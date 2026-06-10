@@ -7,6 +7,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { API_BASE } from '../../lib/api'
 import type { NewsArticle } from '../../lib/api'
 import type { User } from '../../contexts/AuthContext'
+import GradeBadge, { GRADES } from '../../components/GradeBadge'
 
 type Tab = 'overview' | 'news' | 'users'
 
@@ -423,6 +424,11 @@ function NewsTab() {
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 
+const GRADE_OPTIONS = [
+  { value: '', label: '— Aucun grade —' },
+  ...Object.entries(GRADES).map(([k, v]) => ({ value: k, label: v.label })),
+]
+
 function UsersTab({ currentUserId }: { currentUserId: string }) {
   const [users, setUsers] = useState<User[]>([])
 
@@ -433,8 +439,15 @@ function UsersTab({ currentUserId }: { currentUserId: string }) {
 
   async function toggleAdmin(u: User) {
     if (u.id === currentUserId) return
-    const res = await authFetch(`${API_BASE}/admin/users/${u.id}/toggle-admin`, {
+    const res = await authFetch(`${API_BASE}/admin/users/${u.id}/toggle-admin`, { method: 'PATCH' })
+    if (res.ok) { const updated = await res.json(); setUsers(p => p.map(x => x.id === u.id ? updated : x)) }
+  }
+
+  async function setGrade(u: User, grade: string) {
+    const res = await authFetch(`${API_BASE}/admin/users/${u.id}/grade`, {
       method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ grade: grade || null }),
     })
     if (res.ok) { const updated = await res.json(); setUsers(p => p.map(x => x.id === u.id ? updated : x)) }
   }
@@ -447,8 +460,9 @@ function UsersTab({ currentUserId }: { currentUserId: string }) {
           <thead>
             <tr className="border-b border-border bg-surface/40">
               <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Joueur</th>
-              <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest hidden sm:table-cell">Email</th>
-              <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Inscription</th>
+              <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest hidden md:table-cell">Email</th>
+              <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest hidden sm:table-cell">Inscription</th>
+              <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Grade</th>
               <th className="text-center px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Admin</th>
             </tr>
           </thead>
@@ -464,8 +478,22 @@ function UsersTab({ currentUserId }: { currentUserId: string }) {
                     {u.id === currentUserId && <span className="text-[10px] text-muted">(vous)</span>}
                   </div>
                 </td>
-                <td className="px-4 py-3 text-xs text-muted hidden sm:table-cell">{u.email}</td>
-                <td className="px-4 py-3 text-xs text-muted">{fmt(u.created_at)}</td>
+                <td className="px-4 py-3 text-xs text-muted hidden md:table-cell">{u.email}</td>
+                <td className="px-4 py-3 text-xs text-muted hidden sm:table-cell">{fmt(u.created_at)}</td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <GradeBadge grade={u.grade} />
+                    <select
+                      value={u.grade ?? ''}
+                      onChange={e => setGrade(u, e.target.value)}
+                      className="text-[10px] bg-surface border border-border rounded px-1.5 py-1 text-muted focus:outline-none focus:border-gold/40 transition-colors"
+                    >
+                      {GRADE_OPTIONS.map(o => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </td>
                 <td className="px-4 py-3 text-center">
                   <button
                     onClick={() => toggleAdmin(u)}
