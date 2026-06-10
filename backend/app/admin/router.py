@@ -11,7 +11,7 @@ from app.models import User, News, NewsReaction, REACTION_EMOJIS, Badge, UserBad
 from app.schemas import UserResponse, NewsResponse, BadgeCreate, BadgeResponse, UserBadgeResponse
 from app.auth.utils import require_admin
 
-VALID_GRADES = {None, 'pionnier', 'veteran', 'conquerant', 'legende', 'vip'}
+VALID_GRADES = {None, 'pionnier', 'veteran', 'conquerant', 'legende', 'vip', 'fondateur'}
 
 class SetGradeRequest(BaseModel):
     grade: str | None = None
@@ -199,6 +199,8 @@ async def toggle_admin(
     user = result.scalar_one_or_none()
     if not user or user.id == current_user.id:
         raise HTTPException(status_code=400, detail="Action impossible")
+    if user.grade == 'fondateur':
+        raise HTTPException(status_code=403, detail="Impossible de modifier un fondateur")
     user.is_admin = not user.is_admin
     await db.commit()
     await db.refresh(user)
@@ -218,6 +220,8 @@ async def set_grade(
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+    if user.grade == 'fondateur':
+        raise HTTPException(status_code=403, detail="Impossible de modifier un fondateur")
     user.grade = body.grade
     await db.commit()
     await db.refresh(user)
