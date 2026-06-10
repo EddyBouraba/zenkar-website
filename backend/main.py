@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
 import os
+import time
+import httpx
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -95,14 +97,32 @@ async def sitemap(db: AsyncSession = Depends(get_db)):
     return Response(content=xml, media_type="application/xml")
 
 
+_stats_cache: dict = {}
+_stats_cache_at: float = 0.0
+_STATS_TTL = 60.0
+_MC_SERVER = "play.zenkar.net"
+
 @app.get("/stats")
-def stats():
-    return {
-        "players_online": 0,
-        "max_players": 100,
-        "version": "1.21.4",
-        "status": "offline",
-        "tps": 20.0,
-    }
+async def stats():
+    global _stats_cache, _stats_cache_at
+    if time.time() - _stats_cache_at < _STATS_TTL and _stats_cache:
+        return _stats_cache
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            r = await client.get(f"https://api.mcsrvstat.us/3/{_MC_SERVER}")
+            data = r.json()
+        online = data.get("online", False)
+        _stats_cache = {
+            "players_online": data.get("players", {}).get("online", 0) if online else 0,
+            "max_players":    data.get("players", {}).get("max", 100)   if online else 100,
+            "version":        data.get("version", "1.21.x"),
+            "status":         "online" if online else "offline",
+            "tps":            20.0,
+        }
+        _stats_cache_at = time.time()
+    except Exception:
+        if not _stats_cache:
+            _stats_cache = {"players_online": 0, "max_players": 100, "version": "1.21.x", "status": "offline", "tps": 20.0}
+    return _stats_cache
 
 
