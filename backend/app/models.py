@@ -48,6 +48,29 @@ class News(Base):
 REACTION_EMOJIS = {"fire", "heart", "gg", "surprised"}
 
 
+class Badge(Base):
+    __tablename__ = "badges"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    icon: Mapped[str] = mapped_column(String(10), nullable=False)      # emoji fallback
+    icon_url: Mapped[str | None] = mapped_column(String, nullable=True)  # image custom uploadée
+    color: Mapped[str] = mapped_column(String(30), nullable=False)   # classe tailwind ex: text-gold
+    season: Mapped[str | None] = mapped_column(String(30), nullable=True)  # ex: Saison 1
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class UserBadge(Base):
+    __tablename__ = "user_badges"
+    __table_args__ = (UniqueConstraint("user_id", "badge_id", name="uq_user_badge"),)
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    badge_id: Mapped[str] = mapped_column(String, ForeignKey("badges.id", ondelete="CASCADE"), nullable=False)
+    assigned_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class NewsReaction(Base):
     __tablename__ = "news_reactions"
     __table_args__ = (UniqueConstraint("news_id", "user_id", "emoji", name="uq_reaction"),)

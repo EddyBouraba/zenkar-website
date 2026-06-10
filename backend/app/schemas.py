@@ -102,6 +102,38 @@ class NewsResponse(BaseModel):
         from_attributes = True
 
 
+# ── Badges ────────────────────────────────────────────────────────────────────
+
+class BadgeCreate(BaseModel):
+    name: str
+    description: str | None = None
+    icon: str
+    color: str
+    season: str | None = None
+
+
+class BadgeResponse(BaseModel):
+    id: str
+    name: str
+    description: str | None
+    icon: str
+    icon_url: str | None
+    color: str
+    season: str | None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class UserBadgeResponse(BaseModel):
+    badge: BadgeResponse
+    assigned_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 # ── Reactions ─────────────────────────────────────────────────────────────────
 
 class ReactionCounts(BaseModel):

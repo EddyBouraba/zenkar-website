@@ -1,9 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { User, Mail, Calendar, LogOut, Shield, Sword, Check, AlertCircle, X } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { API_BASE } from '../lib/api'
 import GradeBadge from '../components/GradeBadge'
+
+interface BadgeData {
+  badge: { id: string; name: string; icon: string; icon_url: string | null; color: string; season: string | null; description: string | null }
+  assigned_at: string
+}
+
+function BadgeIcon({ badge, size = 24 }: { badge: BadgeData['badge']; size?: number }) {
+  if (badge.icon_url) {
+    const url = badge.icon_url.startsWith('/') ? `${API_BASE}${badge.icon_url}` : badge.icon_url
+    return <img src={url} alt={badge.name} style={{ width: size, height: size }} className="object-contain" />
+  }
+  return <span style={{ fontSize: size * 0.8 }} className="leading-none">{badge.icon}</span>
+}
 
 const DISCORD_SVG = (
   <svg width="14" height="11" viewBox="0 0 127.14 96.36" fill="currentColor">
@@ -24,6 +37,14 @@ export default function Profile() {
   const [mcLoading, setMcLoading] = useState(false)
   const [mcError, setMcError] = useState('')
   const [mcSuccess, setMcSuccess] = useState('')
+  const [badges, setBadges] = useState<BadgeData[]>([])
+
+  useEffect(() => {
+    fetch(`${API_BASE}/auth/me/badges`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : [])
+      .then(setBadges)
+      .catch(() => {})
+  }, [])
 
   function handleLogout() {
     logout()
@@ -140,6 +161,24 @@ export default function Profile() {
           <span className="text-sm text-text">{user.is_admin ? 'Admin' : 'Joueur'}</span>
         </div>
       </div>
+
+      {/* Badges */}
+      {badges.length > 0 && (
+        <div className="rounded border border-border bg-card p-5 mb-6">
+          <h2 className="text-xs font-medium text-muted uppercase tracking-widest mb-4">Badges & Titres</h2>
+          <div className="flex flex-wrap gap-2">
+            {badges.map(({ badge }) => (
+              <div key={badge.id}
+                title={badge.description ?? badge.name}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-surface">
+                <BadgeIcon badge={badge} size={20} />
+                <span className={`text-xs font-semibold ${badge.color}`}>{badge.name}</span>
+                {badge.season && <span className="text-[10px] text-muted">· {badge.season}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Minecraft */}
       <div className="rounded border border-border bg-card p-5 mb-6">

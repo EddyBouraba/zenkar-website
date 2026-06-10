@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Crown, Newspaper, Users, LayoutDashboard, Plus, Trash2, Eye, EyeOff, Shield, ShieldOff, AlertCircle, Check, ImagePlus, ExternalLink, Pencil, X, Calendar, Flame } from 'lucide-react'
+import { Crown, Newspaper, Users, LayoutDashboard, Plus, Trash2, Eye, EyeOff, Shield, ShieldOff, AlertCircle, Check, ImagePlus, ExternalLink, Pencil, X, Calendar, Flame, Medal } from 'lucide-react'
 import DOMPurify from 'dompurify'
 import RichEditor from '../../components/RichEditor'
 import { useAuth } from '../../hooks/useAuth'
@@ -9,7 +9,7 @@ import type { NewsArticle } from '../../lib/api'
 import type { User } from '../../contexts/AuthContext'
 import GradeBadge, { GRADES } from '../../components/GradeBadge'
 
-type Tab = 'overview' | 'news' | 'users' | 'engagement'
+type Tab = 'overview' | 'news' | 'users' | 'engagement' | 'badges'
 
 const CATEGORIES = ['annonce', 'event', 'update', 'communaute'] as const
 const CAT_LABELS: Record<string, string> = {
@@ -422,6 +422,338 @@ function NewsTab() {
   )
 }
 
+// ── Badges ────────────────────────────────────────────────────────────────────
+
+const BADGE_COLORS = [
+  { value: 'text-gold',        label: 'Or',      preview: 'bg-gold'        },
+  { value: 'text-purple-400',  label: 'Violet',  preview: 'bg-purple-400'  },
+  { value: 'text-blue-400',    label: 'Bleu',    preview: 'bg-blue-400'    },
+  { value: 'text-green-400',   label: 'Vert',    preview: 'bg-green-400'   },
+  { value: 'text-red-400',     label: 'Rouge',   preview: 'bg-red-400'     },
+  { value: 'text-orange-400',  label: 'Orange',  preview: 'bg-orange-400'  },
+  { value: 'text-cyan-400',    label: 'Cyan',    preview: 'bg-cyan-400'    },
+  { value: 'text-pink-400',    label: 'Rose',    preview: 'bg-pink-400'    },
+]
+
+interface Badge {
+  id: string
+  name: string
+  description: string | null
+  icon: string
+  icon_url: string | null
+  color: string
+  season: string | null
+  created_at: string
+}
+
+interface UserBadge {
+  badge: Badge
+  assigned_at: string
+}
+
+interface UserWithBadges {
+  id: string
+  username: string
+  badges: UserBadge[]
+}
+
+function BadgeIcon({ badge, size = 24 }: { badge: Badge; size?: number }) {
+  if (badge.icon_url) {
+    const url = badge.icon_url.startsWith('/') ? `${API_BASE}${badge.icon_url}` : badge.icon_url
+    return <img src={url} alt={badge.name} style={{ width: size, height: size }} className="object-contain" />
+  }
+  return <span style={{ fontSize: size * 0.8 }} className="leading-none">{badge.icon}</span>
+}
+
+function BadgesTab({ users }: { users: { id: string; username: string }[] }) {
+  const [badges, setBadges] = useState<Badge[]>([])
+  const [form, setForm] = useState({ name: '', description: '', icon: '🏆', color: 'text-gold', season: '' })
+  const [iconFile, setIconFile] = useState<File | null>(null)
+  const [iconPreview, setIconPreview] = useState<string | null>(null)
+  const [showForm, setShowForm] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const iconFileRef = useRef<HTMLInputElement>(null)
+
+  // Attribution
+  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null)
+  const [userBadges, setUserBadges] = useState<Record<string, UserBadge[]>>({})
+  const [assigning, setAssigning] = useState(false)
+  const [selectedUserId, setSelectedUserId] = useState('')
+
+  useEffect(() => {
+    authFetch(`${API_BASE}/admin/badges`)
+      .then(r => r.json()).then(setBadges).catch(() => {})
+  }, [])
+
+  async function loadUserBadges(userId: string) {
+    if (userBadges[userId]) return
+    const res = await authFetch(`${API_BASE}/admin/users/${userId}/badges`)
+    if (res.ok) {
+      const data = await res.json()
+      setUserBadges(p => ({ ...p, [userId]: data }))
+    }
+  }
+
+  function handleIconPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setIconFile(file)
+    setIconPreview(URL.createObjectURL(file))
+  }
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault(); setError(''); setSuccess(''); setSubmitting(true)
+    try {
+      const res = await authFetch(`${API_BASE}/admin/badges`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, description: form.description || null, season: form.season || null }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.detail ?? 'Erreur')
+
+      // upload icône custom si sélectionnée
+      if (iconFile) {
+        const fd = new FormData()
+        fd.append('file', iconFile)
+        const imgRes = await authFetch(`${API_BASE}/admin/badges/${json.id}/upload-icon`, { method: 'POST', body: fd })
+        if (imgRes.ok) {
+          const imgJson = await imgRes.json()
+          json.icon_url = imgJson.icon_url
+        }
+      }
+
+      setBadges(p => [json, ...p])
+      setForm({ name: '', description: '', icon: '🏆', color: 'text-gold', season: '' })
+      setIconFile(null); setIconPreview(null)
+      setShowForm(false)
+      setSuccess('Badge créé !')
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err: any) { setError(err.message) }
+    finally { setSubmitting(false) }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm('Supprimer ce badge ? Il sera retiré à tous les joueurs.')) return
+    const res = await authFetch(`${API_BASE}/admin/badges/${id}`, { method: 'DELETE' })
+    if (res.ok) setBadges(p => p.filter(b => b.id !== id))
+  }
+
+  async function handleAssign(userId: string, badgeId: string) {
+    setAssigning(true)
+    const res = await authFetch(`${API_BASE}/admin/users/${userId}/badges/${badgeId}`, { method: 'POST' })
+    if (res.ok) {
+      // refresh
+      const updated = await authFetch(`${API_BASE}/admin/users/${userId}/badges`)
+      if (updated.ok) {
+        const data = await updated.json()
+        setUserBadges(p => ({ ...p, [userId]: data }))
+      }
+    }
+    setAssigning(false)
+  }
+
+  async function handleRevoke(userId: string, badgeId: string) {
+    const res = await authFetch(`${API_BASE}/admin/users/${userId}/badges/${badgeId}`, { method: 'DELETE' })
+    if (res.ok) {
+      setUserBadges(p => ({
+        ...p,
+        [userId]: (p[userId] ?? []).filter(ub => ub.badge.id !== badgeId),
+      }))
+    }
+  }
+
+  return (
+    <div className="space-y-8">
+
+      {/* Création badge */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs text-muted uppercase tracking-widest">Badges disponibles</p>
+          <button onClick={() => setShowForm(v => !v)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-gold hover:bg-gold-light text-bg text-xs font-semibold transition-colors">
+            <Plus size={12} /> Nouveau badge
+          </button>
+        </div>
+
+        {success && (
+          <div className="flex items-center gap-2 p-3 rounded border border-green-500/30 bg-green-500/10 mb-3">
+            <Check size={13} className="text-green-400" /><p className="text-xs text-green-400">{success}</p>
+          </div>
+        )}
+
+        {showForm && (
+          <form onSubmit={handleCreate} className="rounded border border-border bg-card p-4 mb-4 space-y-3">
+            {error && (
+              <div className="flex items-center gap-2 p-2.5 rounded border border-red-500/30 bg-red-500/10">
+                <AlertCircle size={12} className="text-red-400" /><p className="text-xs text-red-400">{error}</p>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-muted mb-1">Nom</label>
+                <input required value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+                  placeholder="Ex: Champion Saison 1"
+                  className="w-full px-3 py-2 rounded border border-border bg-surface text-text text-sm placeholder:text-muted/40 focus:outline-none focus:border-gold/50" />
+              </div>
+              <div>
+                <label className="block text-xs text-muted mb-1">Saison <span className="text-muted/50">(optionnel)</span></label>
+                <input value={form.season} onChange={e => setForm(p => ({ ...p, season: e.target.value }))}
+                  placeholder="Ex: Saison 1"
+                  className="w-full px-3 py-2 rounded border border-border bg-surface text-text text-sm placeholder:text-muted/40 focus:outline-none focus:border-gold/50" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs text-muted mb-1">Description <span className="text-muted/50">(optionnel)</span></label>
+              <input value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+                placeholder="Ex: Meilleur joueur de la saison"
+                className="w-full px-3 py-2 rounded border border-border bg-surface text-text text-sm placeholder:text-muted/40 focus:outline-none focus:border-gold/50" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-muted mb-1">Icône custom <span className="text-muted/50">(image)</span></label>
+                <input ref={iconFileRef} type="file" accept="image/*" onChange={handleIconPick} className="hidden" />
+                {iconPreview ? (
+                  <div className="flex items-center gap-2">
+                    <img src={iconPreview} alt="" className="w-10 h-10 object-contain rounded border border-border" />
+                    <button type="button" onClick={() => { setIconFile(null); setIconPreview(null); if (iconFileRef.current) iconFileRef.current.value = '' }}
+                      className="text-xs text-red-400 hover:text-red-300 transition-colors">Retirer</button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => iconFileRef.current?.click()}
+                    className="flex items-center gap-2 px-3 py-2 rounded border border-dashed border-border hover:border-gold/40 text-muted hover:text-text text-xs transition-colors">
+                    <ImagePlus size={12} /> Choisir une image
+                  </button>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs text-muted mb-1">Emoji <span className="text-muted/50">(fallback sans image)</span></label>
+                <input required value={form.icon} onChange={e => setForm(p => ({ ...p, icon: e.target.value }))}
+                  className="w-full px-3 py-2 rounded border border-border bg-surface text-text text-2xl focus:outline-none focus:border-gold/50" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs text-muted mb-1">Couleur du nom</label>
+              <div className="flex gap-1.5 flex-wrap">
+                {BADGE_COLORS.map(c => (
+                  <button key={c.value} type="button" onClick={() => setForm(p => ({ ...p, color: c.value }))}
+                    title={c.label}
+                    className={`w-6 h-6 rounded-full ${c.preview} transition-transform ${form.color === c.value ? 'ring-2 ring-white scale-110' : 'opacity-60 hover:opacity-100'}`} />
+                ))}
+              </div>
+            </div>
+            {/* Aperçu */}
+            <div className="flex items-center gap-2 p-3 rounded border border-border bg-surface/50">
+              {iconPreview
+                ? <img src={iconPreview} alt="" className="w-6 h-6 object-contain" />
+                : <span className="text-lg">{form.icon}</span>
+              }
+              <span className={`text-sm font-semibold ${form.color}`}>{form.name || 'Nom du badge'}</span>
+              {form.season && <span className="text-xs text-muted">· {form.season}</span>}
+              {form.description && <span className="text-xs text-muted italic truncate">· {form.description}</span>}
+            </div>
+            <div className="flex gap-2">
+              <button type="submit" disabled={submitting}
+                className="px-4 py-2 rounded bg-gold hover:bg-gold-light text-bg text-xs font-semibold transition-colors disabled:opacity-50">
+                {submitting ? 'Création...' : 'Créer'}
+              </button>
+              <button type="button" onClick={() => { setShowForm(false); setError('') }}
+                className="px-4 py-2 rounded border border-border text-muted hover:text-text text-xs transition-colors">
+                Annuler
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Liste des badges */}
+        {badges.length === 0 ? (
+          <p className="text-center py-8 text-muted text-sm">Aucun badge créé pour l'instant.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {badges.map(b => (
+              <div key={b.id} className="flex items-center gap-3 p-3 rounded border border-border bg-card">
+                <BadgeIcon badge={b} size={32} />
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-semibold ${b.color}`}>{b.name}</p>
+                  <p className="text-xs text-muted truncate">{b.season && `${b.season} · `}{b.description || 'Aucune description'}</p>
+                </div>
+                <button onClick={() => handleDelete(b.id)} className="text-muted hover:text-red-400 transition-colors flex-shrink-0">
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Attribution par joueur */}
+      <div>
+        <p className="text-xs text-muted uppercase tracking-widest mb-3">Attribuer des badges</p>
+        <div className="rounded border border-border overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border bg-surface/40">
+                <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Joueur</th>
+                <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Badges attribués</th>
+                <th className="text-right px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Ajouter</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {users.map((u, i) => {
+                const ubs = userBadges[u.id]
+                return (
+                  <tr key={u.id} className={i % 2 === 0 ? 'bg-card/40' : ''}
+                    onMouseEnter={() => loadUserBadges(u.id)}>
+                    <td className="px-4 py-3 text-sm text-text font-medium">{u.username}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {ubs === undefined && <span className="text-xs text-muted/40">—</span>}
+                        {ubs?.length === 0 && <span className="text-xs text-muted/40">Aucun badge</span>}
+                        {ubs?.map(ub => (
+                          <button key={ub.badge.id} onClick={() => handleRevoke(u.id, ub.badge.id)}
+                            title={`Retirer ${ub.badge.name}`}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border bg-surface hover:border-red-400/40 hover:bg-red-400/5 transition-colors group">
+                            <BadgeIcon badge={ub.badge} size={16} />
+                            <span className={`text-[11px] font-medium ${ub.badge.color} group-hover:text-red-400 transition-colors`}>{ub.badge.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {badges.length > 0 && (
+                        <div className="flex items-center justify-end gap-1.5">
+                          <select
+                            value={selectedUserId === u.id ? selectedBadge?.id ?? '' : ''}
+                            onChange={e => { setSelectedUserId(u.id); setSelectedBadge(badges.find(b => b.id === e.target.value) ?? null) }}
+                            className="text-[10px] bg-surface border border-border rounded px-1.5 py-1 text-muted focus:outline-none focus:border-gold/40"
+                          >
+                            <option value="">Choisir...</option>
+                            {badges
+                              .filter(b => !ubs?.some(ub => ub.badge.id === b.id))
+                              .map(b => <option key={b.id} value={b.id}>{b.icon} {b.name}</option>)}
+                          </select>
+                          <button
+                            disabled={assigning || selectedUserId !== u.id || !selectedBadge}
+                            onClick={() => selectedBadge && handleAssign(u.id, selectedBadge.id).then(() => { setSelectedBadge(null); setSelectedUserId('') })}
+                            className="px-2 py-1 rounded bg-gold/20 hover:bg-gold/30 text-gold text-[10px] font-semibold transition-colors disabled:opacity-30">
+                            <Plus size={11} />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Engagement ────────────────────────────────────────────────────────────────
 
 const EMOJI_MAP: Record<string, string> = {
@@ -626,6 +958,7 @@ const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview',    label: 'Vue d\'ensemble', icon: LayoutDashboard },
   { id: 'news',        label: 'News',            icon: Newspaper },
   { id: 'users',       label: 'Joueurs',         icon: Users },
+  { id: 'badges',      label: 'Badges',          icon: Medal },
   { id: 'engagement',  label: 'Engagement',      icon: Flame },
 ]
 
@@ -633,10 +966,18 @@ export default function AdminDashboard() {
   const { user, loading } = useAuth()
   const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('overview')
+  const [allUsers, setAllUsers] = useState<User[]>([])
 
   useEffect(() => {
     if (!loading && (!user || !user.is_admin)) navigate('/')
   }, [user, loading])
+
+  useEffect(() => {
+    if (user?.is_admin) {
+      authFetch(`${API_BASE}/admin/users`)
+        .then(r => r.json()).then(setAllUsers).catch(() => {})
+    }
+  }, [user])
 
   if (loading || !user) return null
 
@@ -672,6 +1013,7 @@ export default function AdminDashboard() {
       {tab === 'overview'   && <Overview onTab={setTab} />}
       {tab === 'news'       && <NewsTab />}
       {tab === 'users'      && <UsersTab currentUserId={user.id} />}
+      {tab === 'badges'     && <BadgesTab users={allUsers} />}
       {tab === 'engagement' && <EngagementTab />}
     </div>
   )

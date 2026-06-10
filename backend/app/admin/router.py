@@ -1,10 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
+import os, uuid, shutil
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
+
+BADGE_UPLOAD_DIR = "uploads/badges"
+os.makedirs(BADGE_UPLOAD_DIR, exist_ok=True)
 from app.database import get_db
-from app.models import User, News, NewsReaction, REACTION_EMOJIS
-from app.schemas import UserResponse, NewsResponse
+from app.models import User, News, NewsReaction, REACTION_EMOJIS, Badge, UserBadge
+from app.schemas import UserResponse, NewsResponse, BadgeCreate, BadgeResponse, UserBadgeResponse
 from app.auth.utils import require_admin
 
 VALID_GRADES = {None, 'pionnier', 'veteran', 'conquerant', 'legende', 'vip'}
@@ -82,6 +86,107 @@ async def reactions_stats(
             articles[row.news_id]["total"] += row.n
 
     return sorted(articles.values(), key=lambda x: x["total"], reverse=True)
+
+
+# ── Badges ────────────────────────────────────────────────────────────────────
+
+@router.get("/badges", response_model=list[BadgeResponse])
+async def list_badges(db: AsyncSession = Depends(get_db), _: User = Depends(require_admin)):
+    result = await db.execute(select(Badge).order_by(Badge.created_at.desc()))
+    return result.scalars().all()
+
+
+@router.post("/badges", response_model=BadgeResponse, status_code=201)
+async def create_badge(body: BadgeCreate, db: AsyncSession = Depends(get_db), _: User = Depends(require_admin)):
+    existing = await db.execute(select(Badge).where(Badge.name == body.name))
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="Un badge avec ce nom existe déjà")
+    badge = Badge(**body.model_dump())
+    db.add(badge)
+    await db.commit()
+    await db.refresh(badge)
+    return badge
+
+
+@router.post("/badges/{badge_id}/upload-icon")
+async def upload_badge_icon(
+    badge_id: str,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    if file.content_type not in {"image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"}:
+        raise HTTPException(status_code=400, detail="Format non supporté (jpg, png, webp, gif, svg)")
+    result = await db.execute(select(Badge).where(Badge.id == badge_id))
+    badge = result.scalar_one_or_none()
+    if not badge:
+        raise HTTPException(status_code=404, detail="Badge introuvable")
+
+    # supprimer l'ancienne icône si elle existe
+    if badge.icon_url:
+        old_path = badge.icon_url.lstrip("/")
+        if os.path.exists(old_path):
+            os.remove(old_path)
+
+    ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "png"
+    filename = f"{uuid.uuid4()}.{ext}"
+    path = os.path.join(BADGE_UPLOAD_DIR, filename)
+    with open(path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    badge.icon_url = f"/uploads/badges/{filename}"
+    await db.commit()
+    await db.refresh(badge)
+    return {"icon_url": badge.icon_url}
+
+
+@router.delete("/badges/{badge_id}", status_code=204)
+async def delete_badge(badge_id: str, db: AsyncSession = Depends(get_db), _: User = Depends(require_admin)):
+    result = await db.execute(select(Badge).where(Badge.id == badge_id))
+    badge = result.scalar_one_or_none()
+    if not badge:
+        raise HTTPException(status_code=404, detail="Badge introuvable")
+    await db.delete(badge)
+    await db.commit()
+
+
+@router.get("/users/{user_id}/badges", response_model=list[UserBadgeResponse])
+async def get_user_badges(user_id: str, db: AsyncSession = Depends(get_db), _: User = Depends(require_admin)):
+    result = await db.execute(select(UserBadge).where(UserBadge.user_id == user_id))
+    user_badges = result.scalars().all()
+    out = []
+    for ub in user_badges:
+        badge_row = await db.execute(select(Badge).where(Badge.id == ub.badge_id))
+        badge = badge_row.scalar_one_or_none()
+        if badge:
+            out.append({"badge": badge, "assigned_at": ub.assigned_at})
+    return out
+
+
+@router.post("/users/{user_id}/badges/{badge_id}", status_code=201)
+async def assign_badge(user_id: str, badge_id: str, db: AsyncSession = Depends(get_db), _: User = Depends(require_admin)):
+    user = await db.execute(select(User).where(User.id == user_id))
+    if not user.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+    badge = await db.execute(select(Badge).where(Badge.id == badge_id))
+    if not badge.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Badge introuvable")
+    existing = await db.execute(select(UserBadge).where(UserBadge.user_id == user_id, UserBadge.badge_id == badge_id))
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="Badge déjà attribué")
+    db.add(UserBadge(user_id=user_id, badge_id=badge_id))
+    await db.commit()
+    return {"ok": True}
+
+
+@router.delete("/users/{user_id}/badges/{badge_id}", status_code=204)
+async def revoke_badge(user_id: str, badge_id: str, db: AsyncSession = Depends(get_db), _: User = Depends(require_admin)):
+    result = await db.execute(select(UserBadge).where(UserBadge.user_id == user_id, UserBadge.badge_id == badge_id))
+    ub = result.scalar_one_or_none()
+    if not ub:
+        raise HTTPException(status_code=404, detail="Attribution introuvable")
+    await db.delete(ub)
+    await db.commit()
 
 
 @router.patch("/users/{user_id}/toggle-admin", response_model=UserResponse)

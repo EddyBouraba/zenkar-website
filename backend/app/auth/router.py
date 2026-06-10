@@ -7,8 +7,8 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
-from app.models import User
-from app.schemas import RegisterRequest, LoginRequest, TokenResponse, UserResponse
+from app.models import User, Badge, UserBadge
+from app.schemas import RegisterRequest, LoginRequest, TokenResponse, UserResponse, UserBadgeResponse, BadgeResponse
 from app.auth.utils import hash_password, verify_password, create_access_token, get_current_user, require_admin, COOKIE_NAME
 from app.auth.discord import get_discord_oauth_url, exchange_code, get_discord_user
 from app.config import settings
@@ -88,6 +88,19 @@ async def login(request: Request, response: Response, body: LoginRequest, db: As
 @router.get("/me", response_model=UserResponse)
 async def me(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+@router.get("/me/badges", response_model=list[UserBadgeResponse])
+async def me_badges(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(UserBadge).where(UserBadge.user_id == current_user.id))
+    user_badges = result.scalars().all()
+    out = []
+    for ub in user_badges:
+        badge_row = await db.execute(select(Badge).where(Badge.id == ub.badge_id))
+        badge = badge_row.scalar_one_or_none()
+        if badge:
+            out.append({"badge": badge, "assigned_at": ub.assigned_at})
+    return out
 
 
 @router.post("/logout")
