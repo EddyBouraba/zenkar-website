@@ -74,6 +74,8 @@ async def register(request: Request, response: Response, body: RegisterRequest, 
 @router.post("/login")
 @limiter.limit("20/minute")
 async def login(request: Request, response: Response, body: LoginRequest, db: AsyncSession = Depends(get_db)):
+    if body.turnstile_token and not await verify_turnstile(body.turnstile_token):
+        raise HTTPException(status_code=400, detail="Captcha invalide")
     result = await db.execute(select(User).where(User.email == body.email))
     user = result.scalar_one_or_none()
 
