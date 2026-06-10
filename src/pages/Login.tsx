@@ -12,7 +12,7 @@ const DISCORD_SVG = (
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login } = useAuth()
+  const { refreshUser } = useAuth()
   const from = (location.state as any)?.from ?? '/'
   const [showPwd, setShowPwd] = useState(false)
   const [email, setEmail] = useState('')
@@ -25,8 +25,8 @@ export default function Login() {
     setError('')
     setLoading(true)
     try {
-      const token = await apiLogin(email, password)
-      await login(token)
+      await apiLogin(email, password)
+      await refreshUser()
       navigate(from, { replace: true })
     } catch (err: any) {
       setError(err.message)

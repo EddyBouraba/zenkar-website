@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24 * 7  # 7 jours
 
     frontend_url: str = "https://zenkar.fr"
+    env: str = "production"  # "development" en local
 
     discord_client_id: str = ""
     discord_client_secret: str = ""

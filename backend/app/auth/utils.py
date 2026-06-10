@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import PyJWTError
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.config import settings
@@ -10,7 +10,8 @@ from app.database import get_db
 from app.models import User
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-bearer_scheme = HTTPBearer()
+
+COOKIE_NAME = "access_token"
 
 
 def hash_password(password: str) -> str:
@@ -26,17 +27,31 @@ def create_access_token(user_id: str) -> str:
     return jwt.encode({"sub": user_id, "exp": expire}, settings.secret_key, algorithm=settings.algorithm)
 
 
+def _extract_token(request: Request) -> str | None:
+    # Priorité : cookie HttpOnly, puis header Authorization (fallback dev/API)
+    token = request.cookies.get(COOKIE_NAME)
+    if token:
+        return token
+    auth = request.headers.get("Authorization", "")
+    if auth.startswith("Bearer "):
+        return auth[7:]
+    return None
+
+
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ) -> User:
     exc = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
+    token = _extract_token(request)
+    if not token:
+        raise exc
     try:
-        payload = jwt.decode(credentials.credentials, settings.secret_key, algorithms=[settings.algorithm])
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         user_id: str = payload.get("sub")
         if not user_id:
             raise exc
-    except JWTError:
+    except PyJWTError:
         raise exc
 
     result = await db.execute(select(User).where(User.id == user_id))

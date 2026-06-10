@@ -14,10 +14,8 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-function token() { return localStorage.getItem('token') ?? '' }
-
 export default function Profile() {
-  const { user: maybeUser, logout, login } = useAuth()
+  const { user: maybeUser, logout, refreshUser } = useAuth()
   const user = maybeUser!
   const navigate = useNavigate()
 
@@ -37,12 +35,13 @@ export default function Profile() {
     try {
       const res = await fetch(`${API_BASE}/auth/minecraft`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ username: mcInput.trim() }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.detail ?? 'Erreur')
-      await login(token())
+      await refreshUser()
       setMcSuccess(`Compte lié : ${json.minecraft_username}`)
       setMcInput('')
     } catch (err: any) {
@@ -57,10 +56,10 @@ export default function Profile() {
     try {
       const res = await fetch(`${API_BASE}/auth/minecraft`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token()}` },
+        credentials: 'include',
       })
       if (!res.ok) throw new Error('Erreur')
-      await login(token())
+      await refreshUser()
       setMcSuccess('Compte Minecraft délié.')
     } catch (err: any) {
       setMcError(err.message)

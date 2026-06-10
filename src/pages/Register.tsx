@@ -23,7 +23,7 @@ function getAge(dob: string) {
 
 export default function Register() {
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { refreshUser } = useAuth()
   const [showPwd, setShowPwd] = useState(false)
   const [f, setF] = useState({ username: '', email: '', password: '', confirm: '', dob: '' })
   const [apiError, setApiError] = useState('')
@@ -82,14 +82,14 @@ export default function Register() {
             setApiError('')
             setSubmitting(true)
             try {
-              const token = await apiRegister({
+              await apiRegister({
                 username: f.username,
                 email: f.email,
                 password: f.password,
                 date_of_birth: f.dob,
                 turnstile_token: 'bypass', // TODO: remplacer par le vrai widget Turnstile Cloudflare
               })
-              await login(token)
+              await refreshUser()
               navigate('/')
             } catch (err: any) {
               setApiError(err.message)

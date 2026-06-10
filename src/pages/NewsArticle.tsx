@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Crown, ArrowLeft, Calendar } from 'lucide-react'
+import DOMPurify from 'dompurify'
 import { API_BASE } from '../lib/api'
 import type { NewsArticle } from '../lib/api'
 
@@ -90,7 +91,7 @@ export default function NewsArticlePage() {
       {article.content ? (
         <div
           className="prose-zenkar text-sm"
-          dangerouslySetInnerHTML={{ __html: article.content }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }}
         />
       ) : (
         <p className="text-muted text-sm italic">Aucun contenu détaillé pour cet article.</p>

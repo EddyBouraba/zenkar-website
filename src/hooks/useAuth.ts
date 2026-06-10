@@ -9,24 +9,24 @@ export async function apiRegister(data: {
   password: string
   date_of_birth: string
   turnstile_token: string
-}): Promise<string> {
+}): Promise<void> {
   const res = await fetch(`${API}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(data),
   })
   const json = await res.json()
   if (!res.ok) throw new Error(json.detail ?? 'Erreur inscription')
-  return json.access_token
 }
 
-export async function apiLogin(email: string, password: string): Promise<string> {
+export async function apiLogin(email: string, password: string): Promise<void> {
   const res = await fetch(`${API}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ email, password }),
   })
   const json = await res.json()
   if (!res.ok) throw new Error(json.detail ?? 'Email ou mot de passe incorrect')
-  return json.access_token
 }

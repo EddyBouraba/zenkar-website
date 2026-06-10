@@ -2,14 +2,14 @@ import secrets
 import httpx
 from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
 from app.models import User
 from app.schemas import RegisterRequest, LoginRequest, TokenResponse, UserResponse
-from app.auth.utils import hash_password, verify_password, create_access_token, get_current_user, require_admin
+from app.auth.utils import hash_password, verify_password, create_access_token, get_current_user, require_admin, COOKIE_NAME
 from app.auth.discord import get_discord_oauth_url, exchange_code, get_discord_user
 from app.config import settings
 
@@ -18,6 +18,20 @@ from app.limiter import limiter
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 MC_CHANGE_COOLDOWN = timedelta(hours=24)
+COOKIE_MAX_AGE = settings.access_token_expire_minutes * 60
+
+
+def set_auth_cookie(response: Response, token: str) -> None:
+    is_prod = settings.env == "production"
+    response.set_cookie(
+        key=COOKIE_NAME,
+        value=token,
+        max_age=COOKIE_MAX_AGE,
+        httponly=True,
+        secure=is_prod,
+        samesite="lax",
+        path="/",
+    )
 
 
 async def verify_turnstile(token: str) -> bool:
@@ -31,9 +45,9 @@ async def verify_turnstile(token: str) -> bool:
         return resp.json().get("success", False)
 
 
-@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", status_code=status.HTTP_201_CREATED)
 @limiter.limit("5/hour")
-async def register(request: Request, body: RegisterRequest, db: AsyncSession = Depends(get_db)):
+async def register(request: Request, response: Response, body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     if not await verify_turnstile(body.turnstile_token):
         raise HTTPException(status_code=400, detail="Captcha invalide")
 
@@ -52,19 +66,23 @@ async def register(request: Request, body: RegisterRequest, db: AsyncSession = D
     db.add(user)
     await db.commit()
     await db.refresh(user)
-    return TokenResponse(access_token=create_access_token(user.id))
+    token = create_access_token(user.id)
+    set_auth_cookie(response, token)
+    return {"detail": "Compte créé"}
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login")
 @limiter.limit("20/minute")
-async def login(request: Request, body: LoginRequest, db: AsyncSession = Depends(get_db)):
+async def login(request: Request, response: Response, body: LoginRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == body.email))
     user = result.scalar_one_or_none()
 
     if not user or not user.password_hash or not verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Email ou mot de passe incorrect")
 
-    return TokenResponse(access_token=create_access_token(user.id))
+    token = create_access_token(user.id)
+    set_auth_cookie(response, token)
+    return {"detail": "Connecté"}
 
 
 @router.get("/me", response_model=UserResponse)
@@ -73,7 +91,8 @@ async def me(current_user: User = Depends(get_current_user)):
 
 
 @router.post("/logout")
-async def logout():
+async def logout(response: Response):
+    response.delete_cookie(key=COOKIE_NAME, path="/")
     return {"detail": "Déconnecté"}
 
 
@@ -167,13 +186,27 @@ async def unlink_minecraft(
 # ── Discord OAuth ─────────────────────────────────────────────────────────────
 
 @router.get("/discord")
-async def discord_login():
+async def discord_login(response: Response):
     state = secrets.token_urlsafe(16)
-    return RedirectResponse(get_discord_oauth_url(state))
+    response = RedirectResponse(get_discord_oauth_url(state))
+    response.set_cookie(
+        key="oauth_state",
+        value=state,
+        max_age=300,
+        httponly=True,
+        secure=settings.env == "production",
+        samesite="lax",
+        path="/",
+    )
+    return response
 
 
 @router.get("/discord/callback")
-async def discord_callback(code: str, db: AsyncSession = Depends(get_db)):
+async def discord_callback(request: Request, code: str, state: str, db: AsyncSession = Depends(get_db)):
+    stored_state = request.cookies.get("oauth_state")
+    if not stored_state or stored_state != state:
+        raise HTTPException(status_code=400, detail="State OAuth invalide")
+
     try:
         token_data = await exchange_code(code)
         discord_user = await get_discord_user(token_data["access_token"])
@@ -213,4 +246,7 @@ async def discord_callback(code: str, db: AsyncSession = Depends(get_db)):
         await db.refresh(user)
 
     token = create_access_token(user.id)
-    return RedirectResponse(f"{settings.frontend_url}?token={token}")
+    redirect = RedirectResponse(url=settings.frontend_url, status_code=302)
+    set_auth_cookie(redirect, token)
+    redirect.delete_cookie("oauth_state", path="/")
+    return redirect

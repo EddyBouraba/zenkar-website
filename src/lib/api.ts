@@ -33,20 +33,3 @@ export async function fetchNews(): Promise<NewsArticle[]> {
   return res.json()
 }
 
-export async function createNews(data: {
-  title: string
-  slug: string
-  category: string
-  excerpt: string
-  content?: string
-  published?: boolean
-}, token: string): Promise<NewsArticle> {
-  const res = await fetch(`${API_BASE}/news`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify(data),
-  })
-  const json = await res.json()
-  if (!res.ok) throw new Error(json.detail ?? 'Erreur création article')
-  return json
-}

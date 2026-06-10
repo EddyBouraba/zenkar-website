@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Crown, Newspaper, Users, LayoutDashboard, Plus, Trash2, Eye, EyeOff, Shield, ShieldOff, AlertCircle, Check, ImagePlus, ExternalLink, Pencil, X, Calendar } from 'lucide-react'
+import DOMPurify from 'dompurify'
 import RichEditor from '../../components/RichEditor'
 import { useAuth } from '../../hooks/useAuth'
 import { API_BASE } from '../../lib/api'
@@ -27,7 +28,9 @@ function slugify(str: string) {
 function fmt(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
 }
-function token() { return localStorage.getItem('token') ?? '' }
+function authFetch(url: string, opts: RequestInit = {}) {
+  return fetch(url, { ...opts, credentials: 'include' })
+}
 
 // ── Overview ──────────────────────────────────────────────────────────────────
 
@@ -35,7 +38,7 @@ function Overview({ onTab }: { onTab: (t: Tab) => void }) {
   const [stats, setStats] = useState<{ users_total: number; news_total: number; news_published: number } | null>(null)
 
   useEffect(() => {
-    fetch(`${API_BASE}/admin/stats`, { headers: { Authorization: `Bearer ${token()}` } })
+    authFetch(`${API_BASE}/admin/stats`)
       .then(r => r.json()).then(setStats).catch(() => {})
   }, [])
 
@@ -125,7 +128,7 @@ function ArticlePreviewModal({ article, imagePreview, onClose }: {
           <div className="h-px mb-6" style={{ background: 'linear-gradient(to right, rgba(201,168,76,0.4), transparent)' }} />
 
           {article.content && article.content !== '<p></p>' ? (
-            <div className="prose-zenkar text-sm" dangerouslySetInnerHTML={{ __html: article.content }} />
+            <div className="prose-zenkar text-sm" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }} />
           ) : (
             <p className="text-muted text-sm italic">Aucun contenu détaillé pour cet article.</p>
           )}
@@ -157,7 +160,7 @@ function NewsTab() {
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    fetch(`${API_BASE}/admin/news`, { headers: { Authorization: `Bearer ${token()}` } })
+    authFetch(`${API_BASE}/admin/news`)
       .then(r => r.json()).then(setArticles).catch(() => {})
   }, [])
 
@@ -193,9 +196,9 @@ function NewsTab() {
       let json: NewsArticle
       if (editingId) {
         // Modification
-        const res = await fetch(`${API_BASE}/news/${editingId}`, {
+        const res = await authFetch(`${API_BASE}/news/${editingId}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...form, content: form.content || null }),
         })
         json = await res.json()
@@ -204,9 +207,9 @@ function NewsTab() {
         setSuccess('Article modifié !')
       } else {
         // Création
-        const res = await fetch(`${API_BASE}/news`, {
+        const res = await authFetch(`${API_BASE}/news`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...form, content: form.content || null }),
         })
         json = await res.json()
@@ -219,8 +222,8 @@ function NewsTab() {
       if (imageFile) {
         const fd = new FormData()
         fd.append('file', imageFile)
-        const imgRes = await fetch(`${API_BASE}/news/${json.id}/upload-image`, {
-          method: 'POST', headers: { Authorization: `Bearer ${token()}` }, body: fd,
+        const imgRes = await authFetch(`${API_BASE}/news/${json.id}/upload-image`, {
+          method: 'POST', body: fd,
         })
         if (imgRes.ok) {
           const imgJson = await imgRes.json()
@@ -238,8 +241,8 @@ function NewsTab() {
     setUploadingImage(articleId)
     const fd = new FormData()
     fd.append('file', file)
-    const res = await fetch(`${API_BASE}/news/${articleId}/upload-image`, {
-      method: 'POST', headers: { Authorization: `Bearer ${token()}` }, body: fd,
+    const res = await authFetch(`${API_BASE}/news/${articleId}/upload-image`, {
+      method: 'POST', body: fd,
     })
     if (res.ok) {
       const json = await res.json()
@@ -249,9 +252,9 @@ function NewsTab() {
   }
 
   async function togglePublish(a: NewsArticle) {
-    const res = await fetch(`${API_BASE}/news/${a.id}`, {
+    const res = await authFetch(`${API_BASE}/news/${a.id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ published: !a.published }),
     })
     if (res.ok) { const u = await res.json(); setArticles(p => p.map(x => x.id === a.id ? u : x)) }
@@ -259,7 +262,7 @@ function NewsTab() {
 
   async function handleDelete(id: string) {
     if (!confirm('Supprimer cet article ?')) return
-    const res = await fetch(`${API_BASE}/news/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token()}` } })
+    const res = await authFetch(`${API_BASE}/news/${id}`, { method: 'DELETE' })
     if (res.ok) setArticles(p => p.filter(a => a.id !== id))
   }
 
@@ -424,14 +427,14 @@ function UsersTab({ currentUserId }: { currentUserId: string }) {
   const [users, setUsers] = useState<User[]>([])
 
   useEffect(() => {
-    fetch(`${API_BASE}/admin/users`, { headers: { Authorization: `Bearer ${token()}` } })
+    authFetch(`${API_BASE}/admin/users`)
       .then(r => r.json()).then(setUsers).catch(() => {})
   }, [])
 
   async function toggleAdmin(u: User) {
     if (u.id === currentUserId) return
-    const res = await fetch(`${API_BASE}/admin/users/${u.id}/toggle-admin`, {
-      method: 'PATCH', headers: { Authorization: `Bearer ${token()}` },
+    const res = await authFetch(`${API_BASE}/admin/users/${u.id}/toggle-admin`, {
+      method: 'PATCH',
     })
     if (res.ok) { const updated = await res.json(); setUsers(p => p.map(x => x.id === u.id ? updated : x)) }
   }

@@ -11,6 +11,7 @@ export interface User {
   discord_avatar: string | null
   minecraft_username: string | null
   minecraft_uuid: string | null
+  minecraft_linked_at: string | null
   is_admin: boolean
   created_at: string
 }
@@ -18,8 +19,8 @@ export interface User {
 interface AuthContextValue {
   user: User | null
   loading: boolean
-  login: (token: string) => Promise<void>
-  logout: () => void
+  refreshUser: () => Promise<void>
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -28,36 +29,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchMe = useCallback(async (token: string) => {
-    const res = await fetch(`${API}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    if (!res.ok) {
-      localStorage.removeItem('token')
-      setUser(null)
-      return
-    }
+  const refreshUser = useCallback(async () => {
+    const res = await fetch(`${API}/auth/me`, { credentials: 'include' })
+    if (!res.ok) { setUser(null); return }
     setUser(await res.json())
   }, [])
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (!token) { setLoading(false); return }
-    fetchMe(token).finally(() => setLoading(false))
-  }, [fetchMe])
+    refreshUser().finally(() => setLoading(false))
+  }, [refreshUser])
 
-  async function login(token: string) {
-    localStorage.setItem('token', token)
-    await fetchMe(token)
-  }
-
-  function logout() {
-    localStorage.removeItem('token')
+  async function logout() {
+    await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' })
     setUser(null)
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, refreshUser, logout }}>
       {children}
     </AuthContext.Provider>
   )
