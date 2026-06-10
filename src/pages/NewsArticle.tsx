@@ -5,6 +5,8 @@ import DOMPurify from 'dompurify'
 import { API_BASE } from '../lib/api'
 import type { NewsArticle } from '../lib/api'
 import SEO from '../components/SEO'
+import NewsReactions from '../components/NewsReactions'
+import SimilarArticles from '../components/SimilarArticles'
 
 const CAT_LABELS: Record<string, string> = {
   annonce: 'Annonce', event: 'Événement', update: 'Mise à jour', communaute: 'Communauté',
@@ -138,8 +140,17 @@ export default function NewsArticlePage() {
         <p className="text-muted text-sm italic">Aucun contenu détaillé pour cet article.</p>
       )}
 
+      {/* Réactions */}
+      <div className="mt-8 pt-6 border-t border-border">
+        <p className="text-xs text-muted mb-3">Réactions</p>
+        <NewsReactions newsId={article.id} />
+      </div>
+
+      {/* Articles similaires */}
+      <SimilarArticles newsId={article.id} />
+
       {/* Footer */}
-      <div className="mt-10 pt-6 border-t border-border flex items-center gap-2">
+      <div className="mt-6 pt-6 border-t border-border flex items-center gap-2">
         <Crown size={12} className="text-gold" />
         <span className="text-xs text-muted">Équipe Zenkar</span>
       </div>

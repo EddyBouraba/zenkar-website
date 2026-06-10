@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from app.database import get_db
-from app.models import User, News
+from app.models import User, News, NewsReaction, REACTION_EMOJIS
 from app.schemas import UserResponse, NewsResponse
 from app.auth.utils import require_admin
 
@@ -46,6 +46,42 @@ async def admin_stats(
         "news_total": news_count,
         "news_published": published_count,
     }
+
+
+@router.get("/reactions-stats")
+async def reactions_stats(
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    # tous les articles publiés
+    news_rows = await db.execute(
+        select(News.id, News.title, News.slug, News.view_count)
+        .where(News.published == True)
+        .order_by(News.created_at.desc())
+    )
+    articles: dict[str, dict] = {
+        row.id: {
+            "id": row.id,
+            "title": row.title,
+            "slug": row.slug,
+            "views": row.view_count or 0,
+            "total": 0,
+            "counts": {e: 0 for e in REACTION_EMOJIS},
+        }
+        for row in news_rows
+    }
+
+    # réactions groupées par article + emoji
+    reaction_rows = await db.execute(
+        select(NewsReaction.news_id, NewsReaction.emoji, func.count().label("n"))
+        .group_by(NewsReaction.news_id, NewsReaction.emoji)
+    )
+    for row in reaction_rows:
+        if row.news_id in articles:
+            articles[row.news_id]["counts"][row.emoji] = row.n
+            articles[row.news_id]["total"] += row.n
+
+    return sorted(articles.values(), key=lambda x: x["total"], reverse=True)
 
 
 @router.patch("/users/{user_id}/toggle-admin", response_model=UserResponse)

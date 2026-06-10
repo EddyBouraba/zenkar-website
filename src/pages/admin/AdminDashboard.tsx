@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Crown, Newspaper, Users, LayoutDashboard, Plus, Trash2, Eye, EyeOff, Shield, ShieldOff, AlertCircle, Check, ImagePlus, ExternalLink, Pencil, X, Calendar } from 'lucide-react'
+import { Crown, Newspaper, Users, LayoutDashboard, Plus, Trash2, Eye, EyeOff, Shield, ShieldOff, AlertCircle, Check, ImagePlus, ExternalLink, Pencil, X, Calendar, Flame } from 'lucide-react'
 import DOMPurify from 'dompurify'
 import RichEditor from '../../components/RichEditor'
 import { useAuth } from '../../hooks/useAuth'
@@ -9,7 +9,7 @@ import type { NewsArticle } from '../../lib/api'
 import type { User } from '../../contexts/AuthContext'
 import GradeBadge, { GRADES } from '../../components/GradeBadge'
 
-type Tab = 'overview' | 'news' | 'users'
+type Tab = 'overview' | 'news' | 'users' | 'engagement'
 
 const CATEGORIES = ['annonce', 'event', 'update', 'communaute'] as const
 const CAT_LABELS: Record<string, string> = {
@@ -422,6 +422,111 @@ function NewsTab() {
   )
 }
 
+// ── Engagement ────────────────────────────────────────────────────────────────
+
+const EMOJI_MAP: Record<string, string> = {
+  fire: '🔥', heart: '❤️', gg: '👏', surprised: '😮',
+}
+
+interface ReactionStat {
+  id: string
+  title: string
+  slug: string
+  views: number
+  total: number
+  counts: Record<string, number>
+}
+
+function EngagementTab() {
+  const [stats, setStats] = useState<ReactionStat[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    authFetch(`${API_BASE}/admin/reactions-stats`)
+      .then(r => r.json()).then(setStats).catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const totalViews = stats.reduce((s, a) => s + a.views, 0)
+  const totalReactions = stats.reduce((s, a) => s + a.total, 0)
+  const topEmojis = Object.entries(
+    stats.reduce((acc, a) => {
+      Object.entries(a.counts).forEach(([e, n]) => { acc[e] = (acc[e] ?? 0) + n })
+      return acc
+    }, {} as Record<string, number>)
+  ).sort((a, b) => b[1] - a[1])
+
+  if (loading) return <p className="text-muted text-xs py-8 text-center">Chargement...</p>
+
+  return (
+    <div className="space-y-6">
+      {/* Résumé global */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="p-4 rounded border border-gold/30 bg-gold/5">
+          <p className="text-xs text-muted uppercase tracking-widest mb-2">Vues totales</p>
+          <p className="font-heading font-bold text-2xl text-gold-light">{totalViews}</p>
+        </div>
+        <div className="p-4 rounded border border-border bg-card">
+          <p className="text-xs text-muted uppercase tracking-widest mb-2">Réactions</p>
+          <p className="font-heading font-bold text-2xl text-gold-light">{totalReactions}</p>
+        </div>
+        {topEmojis.map(([emoji, count]) => (
+          <div key={emoji} className="p-4 rounded border border-border bg-card">
+            <p className="text-xs text-muted uppercase tracking-widest mb-2">{EMOJI_MAP[emoji]}</p>
+            <p className="font-heading font-bold text-2xl text-text">{count}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Classement des articles */}
+      <div>
+        <p className="text-xs text-muted uppercase tracking-widest mb-3">Articles par engagement</p>
+        {stats.length === 0 ? (
+          <p className="text-center py-10 text-muted text-sm">Aucune réaction enregistrée pour l'instant.</p>
+        ) : (
+          <div className="rounded border border-border overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-surface/40">
+                  <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">#</th>
+                  <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Article</th>
+                  <th className="text-right px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Vues</th>
+                  <th className="text-center px-3 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">🔥</th>
+                  <th className="text-center px-3 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">❤️</th>
+                  <th className="text-center px-3 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">👏</th>
+                  <th className="text-center px-3 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">😮</th>
+                  <th className="text-right px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Réactions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {stats.map((a, i) => (
+                  <tr key={a.id} className={i % 2 === 0 ? 'bg-card/40' : ''}>
+                    <td className="px-4 py-3 text-xs text-muted font-mono">{i + 1}</td>
+                    <td className="px-4 py-3">
+                      <Link to={`/news/${a.slug}`} target="_blank"
+                        className="text-sm text-text hover:text-gold transition-colors line-clamp-1">
+                        {a.title}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-right text-sm font-semibold text-gold-light">{a.views}</td>
+                    <td className="px-3 py-3 text-center text-sm text-muted">{a.counts.fire || '—'}</td>
+                    <td className="px-3 py-3 text-center text-sm text-muted">{a.counts.heart || '—'}</td>
+                    <td className="px-3 py-3 text-center text-sm text-muted">{a.counts.gg || '—'}</td>
+                    <td className="px-3 py-3 text-center text-sm text-muted">{a.counts.surprised || '—'}</td>
+                    <td className="px-4 py-3 text-right">
+                      <span className="text-sm font-semibold text-text">{a.total || '—'}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Users ─────────────────────────────────────────────────────────────────────
 
 const GRADE_OPTIONS = [
@@ -518,9 +623,10 @@ function UsersTab({ currentUserId }: { currentUserId: string }) {
 // ── Dashboard principal ───────────────────────────────────────────────────────
 
 const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
-  { id: 'overview', label: 'Vue d\'ensemble', icon: LayoutDashboard },
-  { id: 'news',     label: 'News',            icon: Newspaper },
-  { id: 'users',    label: 'Joueurs',         icon: Users },
+  { id: 'overview',    label: 'Vue d\'ensemble', icon: LayoutDashboard },
+  { id: 'news',        label: 'News',            icon: Newspaper },
+  { id: 'users',       label: 'Joueurs',         icon: Users },
+  { id: 'engagement',  label: 'Engagement',      icon: Flame },
 ]
 
 export default function AdminDashboard() {
@@ -563,9 +669,10 @@ export default function AdminDashboard() {
       </div>
 
       {/* Contenu */}
-      {tab === 'overview' && <Overview onTab={setTab} />}
-      {tab === 'news'     && <NewsTab />}
-      {tab === 'users'    && <UsersTab currentUserId={user.id} />}
+      {tab === 'overview'   && <Overview onTab={setTab} />}
+      {tab === 'news'       && <NewsTab />}
+      {tab === 'users'      && <UsersTab currentUserId={user.id} />}
+      {tab === 'engagement' && <EngagementTab />}
     </div>
   )
 }

@@ -100,3 +100,17 @@ class NewsResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ── Reactions ─────────────────────────────────────────────────────────────────
+
+class ReactionCounts(BaseModel):
+    fire: int = 0
+    heart: int = 0
+    gg: int = 0
+    surprised: int = 0
+
+
+class ReactionsResponse(BaseModel):
+    counts: ReactionCounts
+    user_reaction: str | None  # emoji choisi par l'utilisateur connecté, ou None
