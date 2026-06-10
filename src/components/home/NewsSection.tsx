@@ -98,9 +98,7 @@ export default function NewsSection() {
               Accède aux grades et cosmétiques exclusifs.
             </p>
             <a
-              href="https://shop.zenkar.fr"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/boutique"
               className="block w-full py-2 rounded bg-gold hover:bg-gold-light text-bg text-xs font-medium transition-colors"
             >
               Ouvrir la boutique
