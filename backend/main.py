@@ -100,7 +100,7 @@ async def sitemap(db: AsyncSession = Depends(get_db)):
 _stats_cache: dict = {}
 _stats_cache_at: float = 0.0
 _STATS_TTL = 60.0
-_MC_SERVER = "play.zenkar.net"
+_MC_SERVER = "play.zenkar.fr"
 
 @app.get("/stats")
 async def stats():
