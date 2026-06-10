@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://zenkar.fr/sitemap.xml
+Sitemap: https://api.zenkar.fr/sitemap.xml
