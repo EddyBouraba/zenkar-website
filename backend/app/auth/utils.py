@@ -5,9 +5,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from website.zenkar.backend.app.config import settings
-from website.zenkar.backend.app.database import get_db
-from website.zenkar.backend.app.models import User
+from app.config import settings
+from app.database import get_db
+from app.models import User
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 bearer_scheme = HTTPBearer()
@@ -44,3 +44,9 @@ async def get_current_user(
     if not user or not user.is_active:
         raise exc
     return user
+
+
+async def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    if not current_user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Accès réservé aux admins")
+    return current_user

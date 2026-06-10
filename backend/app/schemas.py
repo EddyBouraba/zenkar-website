@@ -53,7 +53,49 @@ class UserResponse(BaseModel):
     discord_id: str | None
     discord_username: str | None
     discord_avatar: str | None
+    minecraft_username: str | None
+    minecraft_uuid: str | None
+    minecraft_linked_at: datetime | None
+    is_admin: bool
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ── News ──────────────────────────────────────────────────────────────────────
+
+class NewsCreate(BaseModel):
+    title: str
+    slug: str
+    category: str
+    excerpt: str
+    content: str | None = None
+    image_url: str | None = None
+    published: bool = True
+
+
+class NewsUpdate(BaseModel):
+    title: str | None = None
+    slug: str | None = None
+    category: str | None = None
+    excerpt: str | None = None
+    content: str | None = None
+    image_url: str | None = None
+    published: bool | None = None
+
+
+class NewsResponse(BaseModel):
+    id: str
+    title: str
+    slug: str
+    category: str
+    excerpt: str
+    content: str | None
+    image_url: str | None
+    published: bool
+    created_at: datetime
+    author_id: str | None
 
     class Config:
         from_attributes = True

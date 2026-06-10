@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Crown, Eye, EyeOff, AlertCircle } from 'lucide-react'
-import { apiRegister } from '../hooks/useAuth'
+import { apiRegister, useAuth } from '../hooks/useAuth'
 
 const DISCORD_SVG = (
   <svg width="18" height="14" viewBox="0 0 127.14 96.36" fill="currentColor">
@@ -23,6 +23,7 @@ function getAge(dob: string) {
 
 export default function Register() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [showPwd, setShowPwd] = useState(false)
   const [f, setF] = useState({ username: '', email: '', password: '', confirm: '', dob: '' })
   const [apiError, setApiError] = useState('')
@@ -81,13 +82,14 @@ export default function Register() {
             setApiError('')
             setSubmitting(true)
             try {
-              await apiRegister({
+              const token = await apiRegister({
                 username: f.username,
                 email: f.email,
                 password: f.password,
                 date_of_birth: f.dob,
-                turnstile_token: 'bypass',
+                turnstile_token: 'bypass', // TODO: remplacer par le vrai widget Turnstile Cloudflare
               })
+              await login(token)
               navigate('/')
             } catch (err: any) {
               setApiError(err.message)

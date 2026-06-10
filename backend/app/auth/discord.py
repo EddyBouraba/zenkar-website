@@ -1,5 +1,5 @@
 import httpx
-from website.zenkar.backend.app.config import settings
+from app.config import settings
 
 DISCORD_AUTH_URL = "https://discord.com/api/oauth2/authorize"
 DISCORD_TOKEN_URL = "https://discord.com/api/oauth2/token"

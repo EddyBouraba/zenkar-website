@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Crown, Eye, EyeOff, AlertCircle } from 'lucide-react'
-import { apiLogin } from '../hooks/useAuth'
+import { apiLogin, useAuth } from '../hooks/useAuth'
 
 const DISCORD_SVG = (
   <svg width="18" height="14" viewBox="0 0 127.14 96.36" fill="currentColor">
@@ -11,6 +11,9 @@ const DISCORD_SVG = (
 
 export default function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { login } = useAuth()
+  const from = (location.state as any)?.from ?? '/'
   const [showPwd, setShowPwd] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -22,8 +25,9 @@ export default function Login() {
     setError('')
     setLoading(true)
     try {
-      await apiLogin(email, password)
-      navigate('/')
+      const token = await apiLogin(email, password)
+      await login(token)
+      navigate(from, { replace: true })
     } catch (err: any) {
       setError(err.message)
     } finally {

@@ -33,3 +33,69 @@ body {
 ::-webkit-scrollbar-track { background: #09080c; }
 ::-webkit-scrollbar-thumb { background: #252130; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #c9a84c; }
+
+/* ── Rich text (TipTap éditeur + page article) ───────────────────────── */
+.prose-zenkar h2 {
+  font-family: "Cinzel", serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #e8c56d;
+  margin: 1.4em 0 0.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #252130;
+}
+.prose-zenkar h3 {
+  font-family: "Cinzel", serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #c9a84c;
+  margin: 1.2em 0 0.4em;
+}
+.prose-zenkar p {
+  margin: 0.6em 0;
+  color: #c4bba8;
+  line-height: 1.75;
+}
+.prose-zenkar strong { color: #e8c56d; font-weight: 600; }
+.prose-zenkar em { color: #a89d8a; font-style: italic; }
+.prose-zenkar s { color: #6a6258; }
+.prose-zenkar ul {
+  list-style: disc;
+  padding-left: 1.4em;
+  margin: 0.6em 0;
+  color: #c4bba8;
+}
+.prose-zenkar ol {
+  list-style: decimal;
+  padding-left: 1.4em;
+  margin: 0.6em 0;
+  color: #c4bba8;
+}
+.prose-zenkar li { margin: 0.25em 0; line-height: 1.7; }
+.prose-zenkar a {
+  color: #c9a84c;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-zenkar a:hover { color: #e8c56d; }
+.prose-zenkar hr {
+  border: none;
+  border-top: 1px solid #252130;
+  margin: 1.5em 0;
+}
+.prose-zenkar blockquote {
+  border-left: 3px solid #c9a84c;
+  padding-left: 1em;
+  color: #6a6258;
+  font-style: italic;
+  margin: 1em 0;
+}
+
+/* Placeholder TipTap */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #3a3640;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}

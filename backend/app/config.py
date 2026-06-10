@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24 * 7  # 7 jours
 
+    frontend_url: str = "https://zenkar.fr"
+
     discord_client_id: str = ""
     discord_client_secret: str = ""
     discord_redirect_uri: str = "https://api.zenkar.fr/auth/discord/callback"

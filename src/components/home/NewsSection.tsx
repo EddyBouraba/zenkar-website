@@ -1,6 +1,8 @@
 import { Crown, ShoppingBag, Users, Server, MessageCircle, Play, AtSign, FileText, Music, Sparkles } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useNews } from '../../hooks/useNews'
 import { useServerStats } from '../../hooks/useServerStats'
+import { API_BASE } from '../../lib/api'
 
 const CATEGORIES = {
   annonce:    { label: 'Annonce',      cls: 'text-gold bg-gold/10 border-gold/30',           bar: 'bg-gold/70' },
@@ -56,18 +58,24 @@ export default function NewsSection() {
               : news.map(a => {
                   const cat = CATEGORIES[a.category]
                   return (
-                    <article
+                    <Link
                       key={a.id}
-                      className="relative rounded border border-border bg-card overflow-hidden cursor-pointer
+                      to={`/news/${a.slug}`}
+                      className="relative rounded border border-border bg-card overflow-hidden block
                                  hover:border-gold/30 transition-all duration-200 group"
                     >
-                      <div className={`absolute left-0 top-0 bottom-0 w-0.5 ${cat.bar}`} />
+                      {a.image_url && (
+                        <div className="aspect-[3/1] overflow-hidden border-b border-border">
+                          <img src={`${API_BASE}${a.image_url}`} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        </div>
+                      )}
+                      <div className={`absolute left-0 ${a.image_url ? 'bottom-0 h-[60%]' : 'top-0 bottom-0'} w-0.5 ${cat.bar}`} />
                       <div className="px-5 py-4">
                         <div className="flex items-center gap-2 mb-2.5">
                           <span className={`px-2 py-0.5 rounded text-[11px] font-medium border ${cat.cls}`}>
                             {cat.label}
                           </span>
-                          <span className="text-xs text-muted ml-auto">{fmt(a.date)}</span>
+                          <span className="text-xs text-muted ml-auto">{fmt(a.created_at)}</span>
                         </div>
                         <h3 className="text-text font-semibold mb-1.5 group-hover:text-gold-light transition-colors text-sm">
                           {a.title}
@@ -77,7 +85,7 @@ export default function NewsSection() {
                           Lire la suite →
                         </span>
                       </div>
-                    </article>
+                    </Link>
                   )
                 })}
           </div>
