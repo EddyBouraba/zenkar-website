@@ -1,6 +1,6 @@
-import { Shield, Crown, Sparkles, Star } from 'lucide-react'
+import { Shield, Crown, Sparkles, Star, Gem } from 'lucide-react'
 
-export type Grade = 'pionnier' | 'veteran' | 'conquerant' | 'legende' | 'vip'
+export type Grade = 'pionnier' | 'veteran' | 'conquerant' | 'legende' | 'vip' | 'fondateur'
 
 const GRADES: Record<Grade, {
   label: string
@@ -14,6 +14,7 @@ const GRADES: Record<Grade, {
   conquerant: { label: 'Conquérant', icon: Crown,    text: 'text-gold',        border: 'border-gold/30',        bg: 'bg-gold/10'        },
   legende:    { label: 'Légende',    icon: Sparkles, text: 'text-purple-400',  border: 'border-purple-400/30',  bg: 'bg-purple-400/10'  },
   vip:        { label: 'VIP',        icon: Star,     text: 'text-cyan-400',    border: 'border-cyan-400/30',    bg: 'bg-cyan-400/10'    },
+  fondateur:  { label: 'Fondateur', icon: Gem,      text: 'text-rose-400',    border: 'border-rose-400/40',    bg: 'bg-rose-400/10'    },
 }
 
 interface GradeBadgeProps {
