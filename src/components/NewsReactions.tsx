@@ -10,9 +10,6 @@ const REACTIONS: { emoji: ReactionEmoji; icon: string; label: string }[] = [
   { emoji: 'surprised', icon: '😮', label: 'Surpris' },
 ]
 
-const ICON: Record<ReactionEmoji, string> = Object.fromEntries(
-  REACTIONS.map(r => [r.emoji, r.icon])
-) as Record<ReactionEmoji, string>
 
 interface Props {
   newsId: string

@@ -451,11 +451,6 @@ interface UserBadge {
   assigned_at: string
 }
 
-interface UserWithBadges {
-  id: string
-  username: string
-  badges: UserBadge[]
-}
 
 function BadgeIcon({ badge, size = 24 }: { badge: Badge; size?: number }) {
   if (badge.icon_url) {
