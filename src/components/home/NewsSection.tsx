@@ -11,13 +11,6 @@ const CATEGORIES = {
   communaute: { label: 'Communauté',  cls: 'text-green-400 bg-green-400/10 border-green-400/30',     bar: 'bg-green-400/70' },
 }
 
-const FORUM_POSTS = [
-  { title: 'Recrutement guilde Les Combattants', cat: 'Recrutement', time: 'il y a 2h' },
-  { title: 'Bug : Ferme téléporte au spawn',      cat: 'Support',     time: 'il y a 4h' },
-  { title: 'Vente boutique — 20 % pendant 3 j.', cat: 'Annonce',     time: 'il y a 6h' },
-  { title: 'Bot : Célébrez entre villes',          cat: 'Suggestion',  time: 'il y a 8h' },
-  { title: 'Compte-rendu RP : Guerre du Nord',    cat: 'RP',          time: 'il y a 1j'  },
-]
 
 function fmt(d: string) {
   return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -187,21 +180,10 @@ export default function NewsSection() {
                 <span className="font-heading text-xs font-semibold text-gold tracking-widest uppercase">Derniers Sujets</span>
               </div>
             </div>
-            <ul className="divide-y divide-border/50">
-              {FORUM_POSTS.map(p => (
-                <li key={p.title} className="px-4 py-2.5 hover:bg-surface/50 cursor-pointer transition-colors group">
-                  <div className="flex items-start gap-2">
-                    <FileText size={12} className="text-muted mt-0.5 flex-shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-xs text-text group-hover:text-gold-light transition-colors leading-snug truncate">
-                        {p.title}
-                      </p>
-                      <p className="text-[10px] text-muted mt-0.5">{p.cat} · {p.time}</p>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className="px-4 py-6 flex flex-col items-center justify-center gap-2 text-center">
+              <FileText size={18} className="text-muted/40" />
+              <p className="text-xs text-muted">Forum bientôt disponible</p>
+            </div>
           </div>
 
           {/* Communauté */}
