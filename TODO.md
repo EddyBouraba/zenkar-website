@@ -8,7 +8,7 @@
 - [ ] **`hide-online-players=false`** dans `server.properties` sur le VPS Minecraft pour afficher le vrai compteur de joueurs
 
 ## À faire côté code
-- [ ] **Turnstile sur /auth/login** — le token est envoyé depuis le frontend mais le backend ne le vérifie pas encore (seulement sur `/auth/register`)
+- [x] **Turnstile sur /auth/login** — vérifié côté backend
 - [ ] **Sitemap articles** — les articles sont inclus dynamiquement, penser à re-soumettre dans Search Console après chaque gros lot de publications
 
 ## En attente / plus tard
