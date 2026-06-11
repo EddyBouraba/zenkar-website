@@ -19,6 +19,7 @@ import NewsArticle from './pages/NewsArticle'
 import NotFound from './pages/NotFound'
 import Regles from './pages/Regles'
 import MentionsLegales from './pages/MentionsLegales'
+import Support from './pages/Support'
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -65,10 +66,8 @@ function AppLayout() {
           />
           <Route path="/regles" element={<Regles />} />
           <Route path="/mentions-legales" element={<MentionsLegales />} />
-          <Route
-            path="/support"
-            element={<Placeholder title="Support" subtitle="Pour toute question, rejoins le Discord et ouvre un ticket." icon="help" />}
-          />
+          <Route path="/support" element={<Support />} />
+          <Route path="/contact" element={<Navigate to="/support" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
