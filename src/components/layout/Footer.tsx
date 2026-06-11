@@ -16,7 +16,7 @@ const COL_COMMUNAUTE = [
 ]
 
 const COL_SUPPORT = [
-  { label: 'Boutique', href: 'https://shop.zenkar.fr' },
+  { label: 'Boutique', to: '/boutique' },
   { label: 'Aide', to: '/support' },
   { label: 'Contact', to: '/contact' },
   { label: 'Mentions légales', to: '/mentions-legales' },

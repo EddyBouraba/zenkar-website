@@ -18,6 +18,7 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import NewsArticle from './pages/NewsArticle'
 import NotFound from './pages/NotFound'
 import Regles from './pages/Regles'
+import MentionsLegales from './pages/MentionsLegales'
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -63,6 +64,7 @@ function AppLayout() {
             element={<Placeholder title="Wiki" subtitle="Le wiki communautaire arrive après le lancement." icon="wiki" />}
           />
           <Route path="/regles" element={<Regles />} />
+          <Route path="/mentions-legales" element={<MentionsLegales />} />
           <Route
             path="/support"
             element={<Placeholder title="Support" subtitle="Pour toute question, rejoins le Discord et ouvre un ticket." icon="help" />}
