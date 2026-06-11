@@ -95,6 +95,9 @@ export default function Login() {
             <div>
               <div className="flex justify-between mb-1.5">
                 <label className="text-xs text-muted">Mot de passe</label>
+                <Link to="/mot-de-passe-oublie" className="text-xs text-muted hover:text-gold transition-colors">
+                  Mot de passe oublié ?
+                </Link>
               </div>
               <div className="relative">
                 <input

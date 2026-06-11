@@ -1,14 +1,15 @@
 import secrets
+import hashlib
 import httpx
 from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 from app.database import get_db
-from app.models import User, Badge, UserBadge
-from app.schemas import RegisterRequest, LoginRequest, TokenResponse, UserResponse, UserBadgeResponse, BadgeResponse
+from app.models import User, Badge, UserBadge, PasswordResetToken
+from app.schemas import RegisterRequest, LoginRequest, TokenResponse, UserResponse, UserBadgeResponse, BadgeResponse, ForgotPasswordRequest, ResetPasswordRequest
 from app.auth.utils import hash_password, verify_password, create_access_token, get_current_user, require_admin, COOKIE_NAME
 from app.auth.discord import get_discord_oauth_url, exchange_code, get_discord_user
 from app.config import settings
@@ -123,6 +124,120 @@ async def bootstrap_admin(
     await db.commit()
     await db.refresh(current_user)
     return current_user
+
+
+# ── Password reset ───────────────────────────────────────────────────────────
+
+_RESET_EMAIL_HTML = """<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="background:#09080c;color:#c4b5a5;font-family:Arial,sans-serif;margin:0;padding:40px 20px;">
+  <div style="max-width:480px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:32px;">
+      <span style="font-size:26px;font-weight:900;color:#c9a84c;letter-spacing:6px;">ZENKAR</span>
+    </div>
+    <div style="background:#110e1a;border:1px solid #2a2438;border-radius:8px;padding:32px;">
+      <h2 style="color:#e8c56d;font-size:18px;margin:0 0 12px;">Réinitialisation de mot de passe</h2>
+      <p style="font-size:14px;line-height:1.7;color:#8b7d9a;margin:0 0 24px;">
+        Bonjour <strong style="color:#c4b5a5;">{username}</strong>,<br><br>
+        Tu as demandé à réinitialiser ton mot de passe sur Zenkar.<br>
+        Ce lien est valable <strong style="color:#c4b5a5;">1 heure</strong>.
+      </p>
+      <div style="text-align:center;margin:24px 0;">
+        <a href="{reset_url}" style="display:inline-block;padding:12px 32px;background:linear-gradient(135deg,#c9a84c,#e8c56d);color:#09080c;font-weight:700;font-size:13px;text-decoration:none;border-radius:4px;letter-spacing:1px;">
+          RÉINITIALISER MON MOT DE PASSE
+        </a>
+      </div>
+      <p style="font-size:12px;color:#6b5f7a;margin:0;line-height:1.6;">
+        Si tu n'es pas à l'origine de cette demande, ignore cet email.<br>
+        Lien : <a href="{reset_url}" style="color:#c9a84c;word-break:break-all;">{reset_url}</a>
+      </p>
+    </div>
+    <p style="text-align:center;font-size:11px;color:#4a3f5a;margin-top:24px;">
+      © 2026 Zenkar &nbsp;·&nbsp; <a href="https://zenkar.fr" style="color:#4a3f5a;">zenkar.fr</a>
+    </p>
+  </div>
+</body></html>"""
+
+
+async def send_reset_email(to_email: str, username: str, reset_url: str) -> None:
+    if not settings.resend_api_key:
+        return
+    html = _RESET_EMAIL_HTML.format(username=username, reset_url=reset_url)
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            await client.post(
+                "https://api.resend.com/emails",
+                headers={"Authorization": f"Bearer {settings.resend_api_key}"},
+                json={
+                    "from": "noreply@zenkar.fr",
+                    "to": [to_email],
+                    "subject": "Réinitialisation de ton mot de passe — Zenkar",
+                    "html": html,
+                },
+            )
+    except Exception:
+        pass  # Ne pas bloquer la réponse si l'email échoue
+
+
+@router.post("/forgot-password")
+@limiter.limit("3/hour")
+async def forgot_password(request: Request, body: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).where(User.email == body.email))
+    user = result.scalar_one_or_none()
+
+    if user and user.password_hash:
+        # Invalider les tokens existants
+        await db.execute(
+            update(PasswordResetToken)
+            .where(PasswordResetToken.user_id == user.id, PasswordResetToken.used == False)
+            .values(used=True)
+        )
+        raw_token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+        reset_token = PasswordResetToken(
+            user_id=user.id,
+            token_hash=token_hash,
+            expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
+        )
+        db.add(reset_token)
+        await db.commit()
+        reset_url = f"{settings.frontend_url}/reinitialiser-mot-de-passe?token={raw_token}"
+        await send_reset_email(user.email, user.username, reset_url)
+
+    # Toujours renvoyer 200 pour éviter l'énumération d'emails
+    return {"detail": "Si cet email est enregistré, un lien de réinitialisation t'a été envoyé."}
+
+
+@router.post("/reset-password")
+@limiter.limit("10/hour")
+async def reset_password(request: Request, body: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    token_hash = hashlib.sha256(body.token.encode()).hexdigest()
+    result = await db.execute(
+        select(PasswordResetToken).where(
+            PasswordResetToken.token_hash == token_hash,
+            PasswordResetToken.used == False,
+        )
+    )
+    reset_token = result.scalar_one_or_none()
+
+    if not reset_token:
+        raise HTTPException(status_code=400, detail="Lien invalide ou déjà utilisé")
+
+    expires = reset_token.expires_at
+    if expires.tzinfo is None:
+        expires = expires.replace(tzinfo=timezone.utc)
+    if expires < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Lien expiré — fais une nouvelle demande")
+
+    user_result = await db.execute(select(User).where(User.id == reset_token.user_id))
+    user = user_result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=400, detail="Utilisateur introuvable")
+
+    user.password_hash = hash_password(body.password)
+    reset_token.used = True
+    await db.commit()
+    return {"detail": "Mot de passe mis à jour"}
 
 
 # ── Minecraft ────────────────────────────────────────────────────────────────

@@ -20,6 +20,8 @@ import NotFound from './pages/NotFound'
 import Regles from './pages/Regles'
 import MentionsLegales from './pages/MentionsLegales'
 import Support from './pages/Support'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -45,6 +47,8 @@ function AppLayout() {
           <Route path="/vote" element={<Vote />} />
           <Route path="/connexion" element={<GuestRoute><Login /></GuestRoute>} />
           <Route path="/inscription" element={<GuestRoute><Register /></GuestRoute>} />
+          <Route path="/mot-de-passe-oublie" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
+          <Route path="/reinitialiser-mot-de-passe" element={<ResetPassword />} />
           <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
           <Route path="/news/:slug" element={<NewsArticle />} />

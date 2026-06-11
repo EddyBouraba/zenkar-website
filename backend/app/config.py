@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     discord_redirect_uri: str = "https://api.zenkar.fr/auth/discord/callback"
 
     turnstile_secret_key: str = ""
+    resend_api_key: str = ""
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 
