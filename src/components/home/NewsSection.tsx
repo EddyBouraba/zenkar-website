@@ -1,4 +1,10 @@
-import { Crown, ShoppingBag, Users, Server, MessageCircle, Play, AtSign, FileText, Twitch, Sparkles } from 'lucide-react'
+import { Crown, ShoppingBag, Users, Server, MessageCircle, Play, AtSign, FileText, Sparkles } from 'lucide-react'
+
+const TwitchIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z" />
+  </svg>
+)
 import { Link } from 'react-router-dom'
 import { useNews } from '../../hooks/useNews'
 import { useServerStats } from '../../hooks/useServerStats'
@@ -196,7 +202,7 @@ export default function NewsSection() {
               {[
                 { icon: MessageCircle, label: 'Discord',   color: 'text-indigo-400', border: 'border-indigo-500/30', bg: 'bg-indigo-500/10', href: 'https://discord.gg/SrbwjMCMbp' },
                 { icon: Play,          label: 'YouTube',   color: 'text-red-400',    border: 'border-red-500/30',    bg: 'bg-red-500/10',    href: 'https://www.youtube.com/@zenkar_MC' },
-                { icon: Twitch,        label: 'Twitch',    color: 'text-purple-400', border: 'border-purple-500/30', bg: 'bg-purple-500/10', href: 'https://www.twitch.tv/zenkar_mc' },
+                { icon: TwitchIcon,    label: 'Twitch',    color: 'text-purple-400', border: 'border-purple-500/30', bg: 'bg-purple-500/10', href: 'https://www.twitch.tv/zenkar_mc' },
                 { icon: AtSign,        label: 'Twitter',   color: 'text-sky-400',    border: 'border-sky-500/30',    bg: 'bg-sky-500/10',    href: 'https://x.com/ZenkarMC' },
               ].map(({ icon: Icon, label, color, border, bg, href }) => (
                 <a
