@@ -26,6 +26,12 @@ const VOTE_SITES = [
     url: 'https://minecraft-mp.com/server/359080',
     cooldown: '8h',
   },
+  {
+    name: 'ServeursMinecraft.org',
+    desc: 'Annuaire français de référence, très consulté par la communauté.',
+    url: 'https://www.serveursminecraft.org/serveur/7632/',
+    cooldown: '24h',
+  },
 ]
 
 const STEPS = [
@@ -53,7 +59,7 @@ export default function Vote() {
               Voter pour Zenkar
             </h1>
           </div>
-          <span className="text-xs text-muted">+100 Dust par vote · 4 sites</span>
+          <span className="text-xs text-muted">+100 Dust par vote · 5 sites</span>
         </div>
         <div className="h-px mb-6" style={{ background: 'linear-gradient(to right, rgba(201,168,76,0.5), transparent)' }} />
         <p className="text-muted text-sm leading-relaxed max-w-2xl">
