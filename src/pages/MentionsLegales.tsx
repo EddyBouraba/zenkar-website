@@ -5,9 +5,8 @@ const SECTIONS = [
   {
     title: 'Éditeur du site',
     items: [
-      'Le site zenkar.fr est édité à titre personnel par Eddy Bouraba.',
+      'Le site zenkar.fr est édité par Zenkar.',
       'Adresse e-mail : contact@zenkar.fr',
-      'Le directeur de la publication est Eddy Bouraba.',
     ],
   },
   {
