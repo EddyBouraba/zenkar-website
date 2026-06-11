@@ -1,7 +1,6 @@
 import NewsSection from '../components/home/NewsSection'
 import ModesSection from '../components/home/ModesSection'
 import MysteryDustSection from '../components/home/MysteryDustSection'
-import KingdomStatus from '../components/home/KingdomStatus'
 import SEO from '../components/SEO'
 
 const HOME_JSON_LD = {
@@ -29,7 +28,6 @@ export default function Home() {
         jsonLd={HOME_JSON_LD}
       />
       <NewsSection />
-      <KingdomStatus />
       <ModesSection />
       <MysteryDustSection />
     </>
