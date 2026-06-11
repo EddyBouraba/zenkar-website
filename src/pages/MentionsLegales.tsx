@@ -12,7 +12,7 @@ const SECTIONS = [
   {
     title: 'Hébergement',
     items: [
-      'Le site est hébergé sur un serveur privé (MiniPC) via Cloudflare Tunnel.',
+      'Le site est hébergé sur un serveur privé.',
       'Cloudflare, Inc. — 101 Townsend St, San Francisco, CA 94107, États-Unis.',
     ],
   },
