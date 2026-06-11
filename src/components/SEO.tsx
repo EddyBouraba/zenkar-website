@@ -5,7 +5,7 @@ const DEFAULT_TITLE = 'Zenkar — Serveur Minecraft SMP Semi-RP'
 const DEFAULT_DESCRIPTION = 'Zenkar est un serveur Minecraft SMP Semi-RP français. Rejoins une communauté passionnée, explore un monde vivant et forge ta légende.'
 const SITE_URL = 'https://zenkar.fr'
 const DEFAULT_OG_IMAGE = 'https://zenkar.fr/og-default.jpg'
-const TWITTER_HANDLE = '@zenkar_fr'
+const TWITTER_HANDLE = '@ZenkarMC'
 
 interface SEOProps {
   title?: string
