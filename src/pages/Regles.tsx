@@ -126,7 +126,7 @@ export default function Regles() {
         <AlertTriangle size={14} className="text-yellow-400 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-muted leading-relaxed">
           Pour toute question concernant ce règlement ou pour contester une sanction, ouvre un ticket sur le{' '}
-          <a href="#" target="_blank" rel="noopener noreferrer" className="text-gold hover:text-gold-light transition-colors">
+          <a href="https://discord.gg/SrbwjMCMbp" target="_blank" rel="noopener noreferrer" className="text-gold hover:text-gold-light transition-colors">
             Discord Zenkar
           </a>.
           Les décisions du staff sont finales après examen du dossier.

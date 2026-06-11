@@ -194,7 +194,7 @@ export default function NewsSection() {
             </div>
             <div className="grid grid-cols-2 gap-2 p-3">
               {[
-                { icon: MessageCircle, label: 'Discord',   color: 'text-indigo-400', border: 'border-indigo-500/30', bg: 'bg-indigo-500/10', href: '#' },
+                { icon: MessageCircle, label: 'Discord',   color: 'text-indigo-400', border: 'border-indigo-500/30', bg: 'bg-indigo-500/10', href: 'https://discord.gg/SrbwjMCMbp' },
                 { icon: Play,          label: 'YouTube',   color: 'text-red-400',    border: 'border-red-500/30',    bg: 'bg-red-500/10',    href: 'https://www.youtube.com/@zenkar_MC' },
                 { icon: Music,         label: 'TikTok',    color: 'text-pink-400',   border: 'border-pink-500/30',   bg: 'bg-pink-500/10',   href: '#' },
                 { icon: AtSign,        label: 'Twitter',   color: 'text-sky-400',    border: 'border-sky-500/30',    bg: 'bg-sky-500/10',    href: 'https://x.com/ZenkarMC' },

@@ -10,7 +10,7 @@ const COL_JOUER = [
 
 const COL_COMMUNAUTE = [
   { label: 'Forum (bientôt)', to: '/forum' },
-  { label: 'Discord', href: '#' },
+  { label: 'Discord', href: 'https://discord.gg/SrbwjMCMbp' },
   { label: 'Règles', to: '/regles' },
   { label: 'Wiki (bientôt)', to: '/wiki' },
 ]
