@@ -1,7 +1,7 @@
 # Zenkar — Todo
 
 ## À faire côté toi (clés / comptes externes)
-- [ ] **Reset de mot de passe** — choisir un service email (SMTP OVH, Resend, Mailgun...) et configurer `SMTP_*` dans `backend/.env`
+- [x] **Reset de mot de passe** — Resend + noreply@zenkar.fr, domaine vérifié SPF/DKIM, token SHA-256 usage unique 1h
 - [ ] **TikTok** — remplacer `href="#"` dans `src/components/home/NewsSection.tsx` quand le compte est prêt
 - [x] **`hide-online-players=false`** dans `server.properties` — confirmé actif
 - [x] **Votifier plugin** — `VoteURL` mis à jour avec `https://www.serveursminecraft.org/serveur/7632/`
