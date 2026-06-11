@@ -3,7 +3,7 @@
 ## À faire côté toi (clés / comptes externes)
 - [ ] **Reset de mot de passe** — choisir un service email (SMTP OVH, Resend, Mailgun...) et configurer `SMTP_*` dans `backend/.env`
 - [ ] **TikTok** — remplacer `href="#"` dans `src/components/home/NewsSection.tsx` quand le compte est prêt
-- [ ] **`hide-online-players=false`** dans `server.properties` sur le VPS Minecraft pour afficher le vrai compteur de joueurs
+- [x] **`hide-online-players=false`** dans `server.properties` — confirmé actif
 - [ ] **Votifier plugin** — mettre à jour `VoteURL` avec `https://www.serveursminecraft.org/serveur/7632/` dans la config du plugin
 
 ## En attente / plus tard
