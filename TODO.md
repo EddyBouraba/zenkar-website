@@ -9,7 +9,7 @@
 
 ## À faire côté code
 - [x] **Turnstile sur /auth/login** — vérifié côté backend
-- [ ] **Sitemap articles** — les articles sont inclus dynamiquement, penser à re-soumettre dans Search Console après chaque gros lot de publications
+- [x] **Sitemap articles** — dynamique, Google recrawle automatiquement. Re-soumettre manuellement seulement après un gros lot de publications.
 
 ## En attente / plus tard
 - [ ] **Forum** — remplacer le placeholder "bientôt disponible" quand le forum sera prêt
