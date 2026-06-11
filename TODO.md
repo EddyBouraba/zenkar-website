@@ -4,7 +4,7 @@
 - [ ] **Reset de mot de passe** — choisir un service email (SMTP OVH, Resend, Mailgun...) et configurer `SMTP_*` dans `backend/.env`
 - [ ] **TikTok** — remplacer `href="#"` dans `src/components/home/NewsSection.tsx` quand le compte est prêt
 - [x] **`hide-online-players=false`** dans `server.properties` — confirmé actif
-- [ ] **Votifier plugin** — mettre à jour `VoteURL` avec `https://www.serveursminecraft.org/serveur/7632/` dans la config du plugin
+- [x] **Votifier plugin** — `VoteURL` mis à jour avec `https://www.serveursminecraft.org/serveur/7632/`
 
 ## En attente / plus tard
 - [ ] **Forum** — remplacer le placeholder "bientôt disponible" quand le forum sera prêt
