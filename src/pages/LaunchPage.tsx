@@ -59,7 +59,7 @@ export default function LaunchPage() {
           Bâtis la civilisation — Forge ta légende.
         </p>
         <p className="text-muted/60 text-sm mb-10 max-w-md leading-relaxed">
-          Un serveur Minecraft SMP Semi-RP médiéval français. Le royaume ouvre bientôt ses portes.
+          Serveur Minecraft Survival SMP français. Fonde ta guilde, bâtis une civilisation, domine le royaume. Saison 1 — Les Fondateurs.
         </p>
 
         {/* CTAs */}
