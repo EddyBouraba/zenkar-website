@@ -56,7 +56,7 @@ export default function LaunchPage() {
 
         {/* Tagline */}
         <p className="font-heading italic text-muted text-base sm:text-lg mb-2 tracking-wide">
-          Bâtis la civilisation — Forge ta légende.
+          Fonde. Construis. Domine.
         </p>
         <p className="text-muted/60 text-sm mb-10 max-w-md leading-relaxed">
           Serveur Minecraft Survival SMP français. Fonde ta guilde, bâtis une civilisation, domine le royaume. Saison 1 — Les Fondateurs.
