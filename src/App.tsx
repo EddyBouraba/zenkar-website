@@ -26,8 +26,7 @@ import Classements from './pages/Classements'
 import LaunchPage from './pages/LaunchPage'
 
 const LAUNCH_MODE = import.meta.env.VITE_LAUNCH_MODE === 'true'
-
-const STAFF_ROUTES = ['/connexion', '/inscription', '/admin', '/profil', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe']
+const AUTH_ROUTES = ['/connexion', '/inscription', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe']
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -38,10 +37,14 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
 
 function AppLayout() {
   const location = useLocation()
+  const { user, loading } = useAuth()
   const isHome = location.pathname === '/'
 
-  if (LAUNCH_MODE && !STAFF_ROUTES.some(r => location.pathname.startsWith(r))) {
-    return <LaunchPage />
+  if (LAUNCH_MODE && !loading) {
+    const isAuthRoute = AUTH_ROUTES.some(r => location.pathname.startsWith(r))
+    if (!isAuthRoute && !user) {
+      return <LaunchPage />
+    }
   }
 
   return (
