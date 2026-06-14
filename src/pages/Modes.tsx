@@ -32,11 +32,11 @@ const JOBS = [
 ]
 
 const GUILD_TIERS = [
-  { name: 'Campement',  cost: '1 000 $',   members: 5,  chunks: 5,   desc: 'Point de départ. Revendiquez votre territoire et recrutez vos premiers membres.' },
-  { name: 'Fort',       cost: '1 500 $',   members: 10, chunks: 15,  desc: 'Première évolution. Accueillez plus de membres, étendez vos frontières.' },
-  { name: 'Village',    cost: '4 000 $',   members: 20, chunks: 40,  desc: 'Communauté établie. Warp public disponible pour attirer commerçants et visiteurs.' },
-  { name: 'Bastion',    cost: '8 000 $',   members: 35, chunks: 80,  desc: 'Puissance militaire reconnue. Déclaration de guerre possible.' },
-  { name: 'Forteresse', cost: '15 000 $',  members: 50, chunks: 150, desc: 'Sommet de la hiérarchie. Domination économique et territoriale totale.' },
+  { name: 'Campement',  cost: '1 000 $',    members: 10, chunks: 5,   desc: 'Point de départ. Revendiquez votre territoire et recrutez vos premiers membres.' },
+  { name: 'Fort',       cost: '5 000 $',    members: 20, chunks: 15,  desc: 'Première évolution. Accueillez plus de membres, étendez vos frontières.' },
+  { name: 'Village',    cost: '15 000 $',   members: 35, chunks: 40,  desc: 'Communauté établie. Warp public disponible pour attirer commerçants et visiteurs.' },
+  { name: 'Bastion',    cost: '40 000 $',   members: 50, chunks: 80,  desc: 'Puissance militaire reconnue. Déclaration de guerre possible.' },
+  { name: 'Forteresse', cost: '100 000 $',  members: 75, chunks: 150, desc: 'Sommet de la hiérarchie. Domination économique et territoriale totale.' },
 ]
 
 const ROLES = [
@@ -48,11 +48,11 @@ const ROLES = [
 ]
 
 const CLAIM_CHUNKS = [
-  { grade: 'Joueur',     chunks: 10,  color: 'text-text' },
-  { grade: 'Pionnier',   chunks: 25,  color: 'text-emerald-400' },
-  { grade: 'Vétéran',    chunks: 50,  color: 'text-blue-400' },
-  { grade: 'Conquérant', chunks: 80,  color: 'text-gold' },
-  { grade: 'Légende',    chunks: 150, color: 'text-purple-400' },
+  { grade: 'Joueur',     chunks: 16, color: 'text-text' },
+  { grade: 'Pionnier',   chunks: 25, color: 'text-emerald-400' },
+  { grade: 'Vétéran',    chunks: 36, color: 'text-blue-400' },
+  { grade: 'Conquérant', chunks: 49, color: 'text-gold' },
+  { grade: 'Légende',    chunks: 64, color: 'text-purple-400' },
 ]
 
 export default function Modes() {

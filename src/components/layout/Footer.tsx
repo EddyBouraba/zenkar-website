@@ -4,7 +4,7 @@ import { Crown } from 'lucide-react'
 const COL_JOUER = [
   { label: 'Accueil', to: '/' },
   { label: 'Modes de jeu', to: '/modes' },
-  { label: 'Classements (bientôt)', to: '/classements' },
+  { label: 'Classements', to: '/classements' },
   { label: 'Carte dynamique (bientôt)', to: '/carte' },
 ]
 
@@ -43,7 +43,7 @@ export default function Footer() {
             </div>
             <p className="text-sm text-muted leading-relaxed">
               Serveur Minecraft communautaire français — SMP semi-RP médiéval.
-              <br />Saison 1 en cours.
+              <br />Phase Bêta en cours.
             </p>
           </div>
 
