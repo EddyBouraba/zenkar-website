@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Crown, Newspaper, Users, LayoutDashboard, Plus, Trash2, Eye, EyeOff, Shield, ShieldOff, AlertCircle, Check, ImagePlus, ExternalLink, Pencil, X, Calendar, Flame, Medal } from 'lucide-react'
+import { Crown, Newspaper, Users, LayoutDashboard, Plus, Trash2, Eye, EyeOff, Shield, ShieldOff, AlertCircle, Check, ImagePlus, ExternalLink, Pencil, X, Calendar, Flame, Medal, RotateCcw } from 'lucide-react'
 import DOMPurify from 'dompurify'
 import RichEditor from '../../components/RichEditor'
 import { useAuth } from '../../hooks/useAuth'
@@ -37,11 +37,29 @@ function authFetch(url: string, opts: RequestInit = {}) {
 
 function Overview({ onTab }: { onTab: (t: Tab) => void }) {
   const [stats, setStats] = useState<{ users_total: number; news_total: number; news_published: number } | null>(null)
+  const [resetting, setResetting] = useState(false)
+  const [resetMsg, setResetMsg] = useState('')
 
   useEffect(() => {
     authFetch(`${API_BASE}/admin/stats`)
       .then(r => r.json()).then(setStats).catch(() => {})
   }, [])
+
+  async function handleResetLeaderboard() {
+    if (!confirm('Supprimer toutes les données du leaderboard ? Cette action est irréversible.')) return
+    setResetting(true)
+    setResetMsg('')
+    try {
+      const res = await authFetch(`${API_BASE}/admin/leaderboard/reset`, { method: 'POST' })
+      const data = await res.json()
+      setResetMsg(res.ok ? '✓ Leaderboard réinitialisé' : `Erreur : ${data.detail}`)
+    } catch {
+      setResetMsg('Erreur réseau')
+    } finally {
+      setResetting(false)
+      setTimeout(() => setResetMsg(''), 4000)
+    }
+  }
 
   const cards = [
     { label: 'Joueurs inscrits', value: stats?.users_total ?? '—', icon: Users, tab: 'users' as Tab },
@@ -52,7 +70,7 @@ function Overview({ onTab }: { onTab: (t: Tab) => void }) {
   return (
     <div>
       <p className="text-muted text-xs mb-6">Vue d'ensemble du serveur Zenkar.</p>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {cards.map(({ label, value, icon: Icon, tab }) => (
           <button key={label} onClick={() => onTab(tab)}
             className="p-5 rounded border border-border bg-card hover:border-gold/30 transition-colors text-left group">
@@ -63,6 +81,30 @@ function Overview({ onTab }: { onTab: (t: Tab) => void }) {
             <p className="font-heading font-bold text-2xl text-gold-light">{value}</p>
           </button>
         ))}
+      </div>
+
+      {/* Zone danger */}
+      <div className="rounded border border-red-500/20 bg-red-500/5 p-5">
+        <p className="text-xs font-semibold text-red-400 uppercase tracking-widest mb-4">Zone dangereuse</p>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm text-text font-medium">Réinitialiser le leaderboard</p>
+            <p className="text-xs text-muted mt-0.5">Supprime toutes les statistiques joueurs et guildes. À faire avant le lancement officiel.</p>
+          </div>
+          <button
+            onClick={handleResetLeaderboard}
+            disabled={resetting}
+            className="flex items-center gap-2 px-4 py-2 rounded border border-red-500/40 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold transition-colors disabled:opacity-50 flex-shrink-0"
+          >
+            <RotateCcw size={13} className={resetting ? 'animate-spin' : ''} />
+            {resetting ? 'Réinitialisation...' : 'Reset leaderboard'}
+          </button>
+        </div>
+        {resetMsg && (
+          <p className={`text-xs mt-3 ${resetMsg.startsWith('✓') ? 'text-green-400' : 'text-red-400'}`}>
+            {resetMsg}
+          </p>
+        )}
       </div>
     </div>
   )

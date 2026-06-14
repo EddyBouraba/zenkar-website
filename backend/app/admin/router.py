@@ -7,7 +7,7 @@ from sqlalchemy import select, func
 BADGE_UPLOAD_DIR = "uploads/badges"
 os.makedirs(BADGE_UPLOAD_DIR, exist_ok=True)
 from app.database import get_db
-from app.models import User, News, NewsReaction, REACTION_EMOJIS, Badge, UserBadge
+from app.models import User, News, NewsReaction, REACTION_EMOJIS, Badge, UserBadge, LbPlayer, LbGuild
 from app.schemas import UserResponse, NewsResponse, BadgeCreate, BadgeResponse, UserBadgeResponse
 from app.auth.utils import require_admin
 
@@ -187,6 +187,18 @@ async def revoke_badge(user_id: str, badge_id: str, db: AsyncSession = Depends(g
         raise HTTPException(status_code=404, detail="Attribution introuvable")
     await db.delete(ub)
     await db.commit()
+
+
+@router.post("/leaderboard/reset", status_code=200)
+async def reset_leaderboard(
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    from sqlalchemy import delete
+    await db.execute(delete(LbPlayer))
+    await db.execute(delete(LbGuild))
+    await db.commit()
+    return {"ok": True, "message": "Leaderboard réinitialisé"}
 
 
 @router.patch("/users/{user_id}/toggle-admin", response_model=UserResponse)
