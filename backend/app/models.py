@@ -82,6 +82,36 @@ class PasswordResetToken(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+# ── Leaderboard ───────────────────────────────────────────────────────────────
+
+class LbPlayer(Base):
+    __tablename__ = "lb_players"
+
+    uuid: Mapped[str] = mapped_column(String(36), primary_key=True)
+    username: Mapped[str] = mapped_column(String(20), nullable=False)
+    money: Mapped[float] = mapped_column(default=0.0)
+    playtime_ticks: Mapped[int] = mapped_column(default=0)
+    kills: Mapped[int] = mapped_column(default=0)
+    deaths: Mapped[int] = mapped_column(default=0)
+    jobs_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    last_synced: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class LbGuild(Base):
+    __tablename__ = "lb_guilds"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    tier_level: Mapped[int] = mapped_column(default=1)
+    tier_name: Mapped[str] = mapped_column(String(30), nullable=False, default="Campement")
+    members_count: Mapped[int] = mapped_column(default=1)
+    max_members: Mapped[int] = mapped_column(default=10)
+    leader_uuid: Mapped[str] = mapped_column(String(36), nullable=False)
+    leader_name: Mapped[str] = mapped_column(String(20), nullable=False)
+    balance: Mapped[float] = mapped_column(default=0.0)
+    last_synced: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class NewsReaction(Base):
     __tablename__ = "news_reactions"
     __table_args__ = (UniqueConstraint("news_id", "user_id", "emoji", name="uq_reaction"),)

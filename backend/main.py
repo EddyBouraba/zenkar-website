@@ -16,6 +16,7 @@ from app.models import News
 from app.auth.router import router as auth_router
 from app.news.router import router as news_router
 from app.admin.router import router as admin_router
+from app.leaderboard.router import router as leaderboard_router
 from app.config import settings
 
 
@@ -42,6 +43,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(news_router)
 app.include_router(admin_router)
+app.include_router(leaderboard_router)
 
 os.makedirs("uploads/news", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")

@@ -153,6 +153,70 @@ class UserBadgeResponse(BaseModel):
 
 # ── Reactions ─────────────────────────────────────────────────────────────────
 
+# ── Leaderboard ───────────────────────────────────────────────────────────────
+
+class LbJobEntry(BaseModel):
+    level: int
+    xp: float
+
+
+class LbPlayerSync(BaseModel):
+    uuid: str
+    username: str
+    money: float = 0.0
+    playtime_ticks: int = 0
+    kills: int = 0
+    deaths: int = 0
+    jobs: dict[str, LbJobEntry] = {}
+
+
+class LbGuildSync(BaseModel):
+    id: str
+    name: str
+    tier_level: int = 1
+    tier_name: str = "Campement"
+    members_count: int = 1
+    max_members: int = 10
+    leader_uuid: str
+    leader_name: str
+    balance: float = 0.0
+
+
+class LbSyncPayload(BaseModel):
+    players: list[LbPlayerSync]
+    guilds: list[LbGuildSync]
+
+
+class LbPlayerResponse(BaseModel):
+    uuid: str
+    username: str
+    money: float
+    playtime_ticks: int
+    kills: int
+    deaths: int
+    kdr: float
+    jobs: dict[str, LbJobEntry]
+    last_synced: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class LbGuildResponse(BaseModel):
+    id: str
+    name: str
+    tier_level: int
+    tier_name: str
+    members_count: int
+    max_members: int
+    leader_name: str
+    balance: float
+    last_synced: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class ReactionCounts(BaseModel):
     fire: int = 0
     heart: int = 0

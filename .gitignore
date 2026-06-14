@@ -42,3 +42,5 @@ dist-ssr
 *.sw?
 
 CONCEPT.md
+plugins-on-vps/
+minecraft-sync/

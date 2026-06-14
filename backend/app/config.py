@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     turnstile_secret_key: str = ""
     resend_api_key: str = ""
 
+    leaderboard_sync_key: str = ""
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
 

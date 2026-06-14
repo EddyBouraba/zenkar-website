@@ -22,6 +22,7 @@ import MentionsLegales from './pages/MentionsLegales'
 import Support from './pages/Support'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
+import Classements from './pages/Classements'
 import LaunchPage from './pages/LaunchPage'
 
 const LAUNCH_MODE = import.meta.env.VITE_LAUNCH_MODE === 'true'
@@ -61,10 +62,7 @@ function AppLayout() {
           <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
           <Route path="/news/:slug" element={<NewsArticle />} />
-          <Route
-            path="/classements"
-            element={<Placeholder title="Classements" subtitle="Les classements arrivent en Saison 2." icon="trophy" />}
-          />
+          <Route path="/classements" element={<Classements />} />
           <Route
             path="/forum"
             element={<Placeholder title="Forum" subtitle="Le forum ouvre bientôt. Rejoins le Discord en attendant." icon="forum" />}
