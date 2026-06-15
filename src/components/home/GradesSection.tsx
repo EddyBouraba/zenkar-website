@@ -26,6 +26,7 @@ const ROWS: { label: string; values: Val[] }[] = [
   { label: '/anvil portable',    values: [false, false,  true,  true] },
   { label: '/feed',              values: [false, false,  false, true] },
   { label: 'Mystery Dust /vote', values: ['1.5×','2×',  '3×',  '4×'] },
+  { label: 'Chunks de claim',    values: ['16',  '25',   '36',  '49'] },
   { label: 'Préfixe chat',       values: [true,  true,   true,  true] },
 ]
 

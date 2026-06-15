@@ -49,11 +49,11 @@ const GUILD_COMMANDS = [
 ]
 
 const CLAIM_CHUNKS = [
-  { grade: 'Joueur',     chunks: 16, color: 'text-text' },
-  { grade: 'Pionnier',   chunks: 25, color: 'text-emerald-400' },
-  { grade: 'Vétéran',    chunks: 36, color: 'text-blue-400' },
-  { grade: 'Conquérant', chunks: 49, color: 'text-gold' },
-  { grade: 'Légende',    chunks: 64, color: 'text-purple-400' },
+  { grade: 'Joueur',     chunks: 8,  color: 'text-text' },
+  { grade: 'Pionnier',   chunks: 16, color: 'text-emerald-400' },
+  { grade: 'Vétéran',    chunks: 25, color: 'text-blue-400' },
+  { grade: 'Conquérant', chunks: 36, color: 'text-gold' },
+  { grade: 'Légende',    chunks: 49, color: 'text-purple-400' },
 ]
 
 export default function Modes() {
