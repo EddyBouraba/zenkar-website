@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 import os
 import time
 import httpx
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import Response
@@ -46,7 +46,16 @@ app.include_router(admin_router)
 app.include_router(leaderboard_router)
 
 os.makedirs("uploads/news", exist_ok=True)
+os.makedirs("uploads/badges", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+
+@app.middleware("http")
+async def no_cache_on_errors(request: Request, call_next):
+    response = await call_next(request)
+    if response.status_code >= 400:
+        response.headers["cache-control"] = "no-store"
+    return response
 
 
 @app.get("/health")

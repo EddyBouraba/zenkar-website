@@ -15,10 +15,7 @@ services:
       - "8000:8000"
     env_file: .env
     volumes:
-      - uploads_data:/app/uploads
+      - ./data/uploads:/app/uploads
     restart: unless-stopped
     depends_on:
       - frontend
-
-volumes:
-  uploads_data:
