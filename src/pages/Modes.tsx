@@ -101,9 +101,9 @@ export default function Modes() {
         </div>
       </section>
 
-      {/* ── Villes & Guildes ──────────────────────────────────────────── */}
+      {/* ── Guildes ──────────────────────────────────────────────────── */}
       <section className="mb-14">
-        <SectionHeader title="Villes & Guildes" right="Lands + Guilds" />
+        <SectionHeader title="Guildes" right="Lands + Guilds" />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 

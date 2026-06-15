@@ -1,10 +1,10 @@
 import { Crown, Landmark, TrendingUp, Hammer, Swords, Scroll, Shield } from 'lucide-react'
 
 const MODES = [
-  { icon: Landmark,   title: 'Villes & Guildes',   iconColor: 'text-amber-300',  iconBg: 'bg-amber-400/20',  desc: 'Fonde, gouverne, conquiers. De Campement à Forteresse — la progression est collective.' },
+  { icon: Landmark,   title: 'Guildes',             iconColor: 'text-amber-300',  iconBg: 'bg-amber-400/20',  desc: 'Fonde ta guilde, recrute des membres, progresse de Campement à Forteresse. La puissance est collective.' },
   { icon: TrendingUp, title: 'Économie Vivante',    iconColor: 'text-green-300',  iconBg: 'bg-green-400/20',  desc: '9 métiers, marché global, boutiques joueurs. Tu ne peux pas tout faire seul — spécialise-toi.' },
   { icon: Hammer,     title: 'Forge & Artisanat',   iconColor: 'text-orange-300', iconBg: 'bg-orange-400/20', desc: 'Minerais récoltés, équipement forgé, objets craftés. La progression passe par les métiers.' },
-  { icon: Swords,     title: 'Tournois PvP',        iconColor: 'text-red-300',    iconBg: 'bg-red-400/20',    desc: 'Arènes dédiées, déclarations de guerre entre guildes. PvP off partout ailleurs.' },
+  { icon: Swords,     title: 'Tournois PvP',        iconColor: 'text-red-300',    iconBg: 'bg-red-400/20',    desc: 'PvP actif en wilderness. Arènes dédiées et guerres de guildes pour les plus ambitieux.' },
   { icon: Scroll,     title: 'RP & Lore',           iconColor: 'text-purple-300', iconBg: 'bg-purple-400/20', desc: 'Saisons longues, titres legacy, histoire construite par les joueurs eux-mêmes.' },
   { icon: Shield,     title: 'Protection Claim',    iconColor: 'text-blue-300',   iconBg: 'bg-blue-400/20',   desc: 'Tes constructions sont sacrées. Aucun griefing possible dans ton territoire.' },
 ]
