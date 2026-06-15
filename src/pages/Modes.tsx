@@ -211,9 +211,9 @@ export default function Modes() {
             <p className="text-[10px] text-muted uppercase tracking-widest mb-3">3 arènes thématiques</p>
             <div className="space-y-2">
               {[
-                { icon: Droplets, name: 'Arène des Glaces', color: 'text-cyan-300',    bg: 'bg-cyan-400/20',    desc: 'Terrain gelé, visibilité réduite. Combat corps-à-corps privilégié.' },
+                { icon: Droplets, name: 'Arène des Glaces', color: 'text-cyan-300',    bg: 'bg-cyan-400/20',    desc: 'Forêt enneigée. Structure centrale imposante et arbres denses — chaque recoin peut cacher une embuscade.' },
                 { icon: Flame,    name: 'Arène du Nether',  color: 'text-orange-300',  bg: 'bg-orange-400/20',  desc: 'Plateformes de Netherrack, lave en contrebas. Risque permanent de chute.' },
-                { icon: Sparkles, name: "Arène de l'End",   color: 'text-purple-300',  bg: 'bg-purple-400/20',  desc: 'Combat au-dessus du vide. Un faux pas et c\'est la mort instantanée.' },
+                { icon: Sparkles, name: "Arène de l'End",   color: 'text-purple-300',  bg: 'bg-purple-400/20',  desc: 'Cristaux améthyste et ruines flottantes dans un ciel pourpre. Terrain accidenté aux multiples couverts — aucun répit possible.' },
               ].map(({ icon: Icon, name, color, bg, desc }) => (
                 <div key={name} className="flex items-start gap-3 p-4 rounded border border-border bg-card">
                   <div className={`w-8 h-8 rounded flex items-center justify-center flex-shrink-0 ${bg}`}>
@@ -255,7 +255,7 @@ export default function Modes() {
         <SectionHeader title="Protection & Claim" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
-            { icon: Shield, color: 'text-blue-300',  bg: 'bg-blue-400/20',  title: 'Anti-grief total',      desc: 'Aucun joueur ne peut détruire ou placer dans ton claim sans permission explicite. Logs complets via Prism pour rollback en cas de problème.' },
+            { icon: Shield, color: 'text-blue-300',  bg: 'bg-blue-400/20',  title: 'Anti-grief total',      desc: 'Aucun joueur ne peut détruire ou placer dans ton claim sans permission explicite. Logs complets pour rollback en cas de problème.' },
             { icon: Leaf,   color: 'text-green-300', bg: 'bg-green-400/20', title: '/fly dans ton claim',   desc: 'Les grades Conquérant et Légende peuvent voler dans leur propre claim et ceux qui leur font confiance. Désactivé en wilderness.' },
           ].map(({ icon: Icon, color, bg, title, desc }) => (
             <div key={title} className="p-5 rounded border border-border bg-card">
