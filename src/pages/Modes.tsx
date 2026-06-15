@@ -32,19 +32,20 @@ const JOBS = [
 ]
 
 const GUILD_TIERS = [
-  { name: 'Campement',  cost: '1 000 $',    members: 10, chunks: 5,   desc: 'Point de départ. Revendiquez votre territoire et recrutez vos premiers membres.' },
-  { name: 'Fort',       cost: '5 000 $',    members: 20, chunks: 15,  desc: 'Première évolution. Accueillez plus de membres, étendez vos frontières.' },
-  { name: 'Village',    cost: '15 000 $',   members: 35, chunks: 40,  desc: 'Communauté établie. Warp public disponible pour attirer commerçants et visiteurs.' },
-  { name: 'Bastion',    cost: '40 000 $',   members: 50, chunks: 80,  desc: 'Puissance militaire reconnue. Déclaration de guerre possible.' },
-  { name: 'Forteresse', cost: '100 000 $',  members: 75, chunks: 150, desc: 'Sommet de la hiérarchie. Domination économique et territoriale totale.' },
+  { name: 'Campement',  cost: '1 000 $',   members: 10, vaults: 0, bank: '5 000 $',   desc: 'Point de départ. Revendiquez votre territoire et recrutez vos premiers membres.' },
+  { name: 'Fort',       cost: '5 000 $',   members: 20, vaults: 1, bank: '15 000 $',  desc: 'Première évolution. Coffre partagé débloqué. Étendez vos frontières.' },
+  { name: 'Village',    cost: '15 000 $',  members: 35, vaults: 2, bank: '30 000 $',  desc: 'Communauté établie. Warp public disponible pour attirer commerçants et visiteurs.' },
+  { name: 'Bastion',    cost: '40 000 $',  members: 50, vaults: 3, bank: '60 000 $',  desc: 'Puissance militaire reconnue. Déclaration de guerre possible.' },
+  { name: 'Forteresse', cost: '100 000 $', members: 75, vaults: 5, bank: '150 000 $', desc: 'Sommet de la hiérarchie. Domination économique et territoriale totale.' },
 ]
 
-const GUILD_TIER_PERKS = [
-  { name: 'Campement',   vaults: 0, allies: 2,  bank: '5 000 $' },
-  { name: 'Fort',        vaults: 1, allies: 4,  bank: '15 000 $' },
-  { name: 'Village',     vaults: 2, allies: 7,  bank: '30 000 $' },
-  { name: 'Bastion',     vaults: 3, allies: 12, bank: '60 000 $' },
-  { name: 'Forteresse',  vaults: 5, allies: 20, bank: '150 000 $' },
+const GUILD_COMMANDS = [
+  { cmd: '/guild create <nom>',    desc: 'Créer une guilde (coût : 1 000 $)' },
+  { cmd: '/guild invite <joueur>', desc: 'Inviter un joueur' },
+  { cmd: '/guild upgrade',         desc: 'Passer au tier suivant' },
+  { cmd: '/guild vault',           desc: 'Ouvrir les coffres partagés' },
+  { cmd: '/guild ally <guilde>',   desc: 'Proposer une alliance' },
+  { cmd: '/guild war <guilde>',    desc: 'Déclarer la guerre' },
 ]
 
 const CLAIM_CHUNKS = [
@@ -88,9 +89,9 @@ export default function Modes() {
 
         <div className="grid grid-cols-3 gap-3">
           {[
-            { value: '2 max',   label: 'métiers simultanés' },
-            { value: '4.5×',    label: 'revenus au niveau 100' },
-            { value: '7 jours', label: 'cooldown pour quitter' },
+            { value: '2 max',  label: 'métiers simultanés' },
+            { value: '4.5×',   label: 'revenus au niveau 100' },
+            { value: '−30%',   label: 'niveaux perdus si tu quittes' },
           ].map(({ value, label }) => (
             <div key={label} className="p-4 rounded border border-border bg-card text-center">
               <p className="font-heading font-bold text-gold text-lg">{value}</p>
@@ -106,30 +107,17 @@ export default function Modes() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
-          {/* Avantages par tier */}
+          {/* Commandes guildes */}
           <div>
-            <p className="text-[10px] text-muted uppercase tracking-widest mb-3">Avantages par tier</p>
+            <p className="text-[10px] text-muted uppercase tracking-widest mb-3">Commandes principales</p>
             <div className="rounded border border-border overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-surface/40">
-                    <th className="text-left px-3 py-2 text-[10px] font-medium text-muted uppercase tracking-widest">Tier</th>
-                    <th className="text-center px-3 py-2 text-[10px] font-medium text-muted uppercase tracking-widest">Coffres</th>
-                    <th className="text-center px-3 py-2 text-[10px] font-medium text-muted uppercase tracking-widest">Alliés</th>
-                    <th className="text-right px-3 py-2 text-[10px] font-medium text-muted uppercase tracking-widest">Caisse max</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {GUILD_TIER_PERKS.map((tier, i) => (
-                    <tr key={tier.name} className={i % 2 === 0 ? 'bg-card/40' : ''}>
-                      <td className="px-3 py-2.5 font-heading text-xs font-bold text-gold">{tier.name}</td>
-                      <td className="px-3 py-2.5 text-xs text-text text-center">{tier.vaults === 0 ? '—' : tier.vaults}</td>
-                      <td className="px-3 py-2.5 text-xs text-text text-center">{tier.allies}</td>
-                      <td className="px-3 py-2.5 text-xs text-text text-right">{tier.bank}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {GUILD_COMMANDS.map((item, i) => (
+                <div key={item.cmd}
+                  className={`flex items-start gap-3 px-4 py-3 ${i !== GUILD_COMMANDS.length - 1 ? 'border-b border-border/50' : ''}`}>
+                  <code className="text-[11px] text-gold font-mono flex-shrink-0 pt-px">{item.cmd}</code>
+                  <span className="text-xs text-muted">{item.desc}</span>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -154,14 +142,15 @@ export default function Modes() {
         {/* Progression des guildes */}
         <p className="text-[10px] text-muted uppercase tracking-widest mb-3">Progression des guildes</p>
         <div className="rounded border border-border overflow-hidden">
-          <table className="w-full min-w-[540px]">
+          <table className="w-full min-w-[600px]">
             <thead>
               <tr className="border-b border-border bg-surface/40">
                 <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Tier</th>
                 <th className="text-center px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Coût</th>
                 <th className="text-center px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Membres</th>
-                <th className="text-center px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Chunks</th>
-                <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest hidden md:table-cell">Description</th>
+                <th className="text-center px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest">Coffres</th>
+                <th className="text-center px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest hidden sm:table-cell">Caisse max</th>
+                <th className="text-left px-4 py-2.5 text-[10px] font-medium text-muted uppercase tracking-widest hidden lg:table-cell">Description</th>
               </tr>
             </thead>
             <tbody>
@@ -170,8 +159,9 @@ export default function Modes() {
                   <td className="px-4 py-3 font-heading text-sm font-bold text-gold">{tier.name}</td>
                   <td className="px-4 py-3 text-xs text-text text-center">{tier.cost}</td>
                   <td className="px-4 py-3 text-xs text-text text-center">{tier.members}</td>
-                  <td className="px-4 py-3 text-xs text-text text-center">{tier.chunks}</td>
-                  <td className="px-4 py-3 text-xs text-muted hidden md:table-cell">{tier.desc}</td>
+                  <td className="px-4 py-3 text-xs text-text text-center">{tier.vaults === 0 ? '—' : tier.vaults}</td>
+                  <td className="px-4 py-3 text-xs text-text text-center hidden sm:table-cell">{tier.bank}</td>
+                  <td className="px-4 py-3 text-xs text-muted hidden lg:table-cell">{tier.desc}</td>
                 </tr>
               ))}
             </tbody>
@@ -184,7 +174,7 @@ export default function Modes() {
         <SectionHeader title="Économie" right="$ Zenkar" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { icon: TrendingUp,  color: 'text-green-300',  bg: 'bg-green-400/20',  title: 'Revenus par métier',   desc: 'Gagnez des $ Zenkar en pratiquant vos métiers. De 80 $/h au niveau 1 jusqu\'à 585 $/h au niveau 100.' },
+            { icon: TrendingUp,  color: 'text-green-300',  bg: 'bg-green-400/20',  title: 'Revenus par métier',   desc: 'Gagnez des $ Zenkar en pratiquant vos métiers. Les revenus par action progressent avec votre niveau, jusqu\'à 4.5× au niveau 100.' },
             { icon: ShoppingBag, color: 'text-amber-300',  bg: 'bg-amber-400/20',  title: 'Boutiques joueurs',    desc: 'Créez votre propre boutique en jeu avec QuickShop. Vendez vos ressources aux autres joueurs en temps réel.' },
             { icon: Landmark,    color: 'text-blue-300',   bg: 'bg-blue-400/20',   title: 'Marché global (/ah)',   desc: 'Accédez au marché global. Enchérissez sur des items rares ou vendez au meilleur prix du serveur.' },
           ].map(({ icon: Icon, color, bg, title, desc }) => (
@@ -201,14 +191,14 @@ export default function Modes() {
 
       {/* ── PvP & Arènes ──────────────────────────────────────────────── */}
       <section className="mb-14">
-        <SectionHeader title="PvP & Arènes" right="PvP off en monde principal" />
+        <SectionHeader title="PvP & Arènes" right="PvP actif hors claims" />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           <div className="space-y-3">
             {[
-              { title: 'PvP désactivé hors arènes',  desc: 'Le PvP est off dans tout le monde principal. Tu es en sécurité dans ton claim, en ville ou en wilderness.' },
-              { title: 'Système de drop',             desc: 'En arène, le vaincu perd 15 % de son argent en poche et lâche sa tête (cosmétique collectible).' },
-              { title: 'Guerres de guildes',          desc: "Deux guildes peuvent se déclarer la guerre. Le PvP s'active alors entre leurs membres partout dans le monde." },
+              { title: 'PvP actif en wilderness',  desc: 'Le PvP est actif partout dans le monde, sauf dans les claims personnels et de guilde. Un tag de combat t\'empêche de fuir dans un claim pendant un combat.' },
+              { title: 'Système de drop',          desc: 'En arène, le vaincu perd 15 % de son argent en poche et lâche sa tête (cosmétique collectible).' },
+              { title: 'Guerres de guildes',       desc: "Deux guildes peuvent se déclarer la guerre. Le PvP s'active alors entre leurs membres, y compris à l'intérieur de leurs claims respectifs." },
             ].map(({ title, desc }) => (
               <div key={title} className="p-4 rounded border border-border bg-card">
                 <p className="text-text text-sm font-semibold mb-1">{title}</p>
