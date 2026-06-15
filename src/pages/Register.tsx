@@ -76,13 +76,13 @@ export default function Register() {
         <div className="p-6 rounded border border-border bg-card">
 
           {/* Discord */}
-          <button
-            type="button"
+          <a
+            href={`${import.meta.env.VITE_API_URL}/auth/discord`}
             className="w-full flex items-center justify-center gap-3 py-2.5 rounded border border-indigo-500/40 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-300 text-sm font-medium transition-colors mb-6"
           >
             {DISCORD_SVG}
             Continuer avec Discord
-          </button>
+          </a>
 
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-px bg-border" />
