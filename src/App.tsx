@@ -23,10 +23,6 @@ import Support from './pages/Support'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import Classements from './pages/Classements'
-import LaunchPage from './pages/LaunchPage'
-
-const LAUNCH_MODE = import.meta.env.VITE_LAUNCH_MODE === 'true'
-const AUTH_ROUTES = ['/connexion', '/inscription', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe']
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -37,15 +33,7 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
 
 function AppLayout() {
   const location = useLocation()
-  const { user, loading } = useAuth()
   const isHome = location.pathname === '/'
-
-  if (LAUNCH_MODE && !loading) {
-    const isAuthRoute = AUTH_ROUTES.some(r => location.pathname.startsWith(r))
-    if (!isAuthRoute && !user) {
-      return <LaunchPage />
-    }
-  }
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
