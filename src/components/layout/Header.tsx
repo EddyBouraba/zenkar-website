@@ -29,7 +29,7 @@ export default function Header() {
         <div className="h-3 w-px bg-border" />
 
         <span className="hidden sm:inline-flex px-2 py-0.5 rounded-sm border border-gold/25 bg-gold/10 text-gold/80">
-          Saison 1 — Les Fondateurs
+          Phase Bêta — Les Fondateurs
         </span>
 
         <div className="ml-auto flex items-center gap-3">

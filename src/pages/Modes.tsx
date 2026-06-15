@@ -39,12 +39,12 @@ const GUILD_TIERS = [
   { name: 'Forteresse', cost: '100 000 $',  members: 75, chunks: 150, desc: 'Sommet de la hiérarchie. Domination économique et territoriale totale.' },
 ]
 
-const ROLES = [
-  { name: 'Fondateur',  desc: 'Propriétaire de la ville. Droits absolus sur le territoire et les membres.' },
-  { name: 'Gouverneur', desc: 'Gestion avancée : invitations, taxes, permissions de zone.' },
-  { name: 'Maire',      desc: 'Gestion courante des résidents et des zones publiques.' },
-  { name: 'Résident',   desc: 'Membre de confiance. Accès aux zones partagées de la ville.' },
-  { name: 'Visiteur',   desc: 'Accès limité, défini par les permissions de la ville.' },
+const GUILD_TIER_PERKS = [
+  { name: 'Campement',   vaults: 0, allies: 2,  bank: '5 000 $' },
+  { name: 'Fort',        vaults: 1, allies: 4,  bank: '15 000 $' },
+  { name: 'Village',     vaults: 2, allies: 7,  bank: '30 000 $' },
+  { name: 'Bastion',     vaults: 3, allies: 12, bank: '60 000 $' },
+  { name: 'Forteresse',  vaults: 5, allies: 20, bank: '150 000 $' },
 ]
 
 const CLAIM_CHUNKS = [
@@ -106,17 +106,30 @@ export default function Modes() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
-          {/* Rôles */}
+          {/* Avantages par tier */}
           <div>
-            <p className="text-[10px] text-muted uppercase tracking-widest mb-3">Rôles de gouvernance</p>
+            <p className="text-[10px] text-muted uppercase tracking-widest mb-3">Avantages par tier</p>
             <div className="rounded border border-border overflow-hidden">
-              {ROLES.map((role, i) => (
-                <div key={role.name}
-                  className={`flex items-start gap-4 px-4 py-3 ${i !== ROLES.length - 1 ? 'border-b border-border/50' : ''}`}>
-                  <span className="font-heading text-xs font-bold text-gold w-24 flex-shrink-0 pt-px">{role.name}</span>
-                  <span className="text-xs text-muted leading-relaxed">{role.desc}</span>
-                </div>
-              ))}
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-surface/40">
+                    <th className="text-left px-3 py-2 text-[10px] font-medium text-muted uppercase tracking-widest">Tier</th>
+                    <th className="text-center px-3 py-2 text-[10px] font-medium text-muted uppercase tracking-widest">Coffres</th>
+                    <th className="text-center px-3 py-2 text-[10px] font-medium text-muted uppercase tracking-widest">Alliés</th>
+                    <th className="text-right px-3 py-2 text-[10px] font-medium text-muted uppercase tracking-widest">Caisse max</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {GUILD_TIER_PERKS.map((tier, i) => (
+                    <tr key={tier.name} className={i % 2 === 0 ? 'bg-card/40' : ''}>
+                      <td className="px-3 py-2.5 font-heading text-xs font-bold text-gold">{tier.name}</td>
+                      <td className="px-3 py-2.5 text-xs text-text text-center">{tier.vaults === 0 ? '—' : tier.vaults}</td>
+                      <td className="px-3 py-2.5 text-xs text-text text-center">{tier.allies}</td>
+                      <td className="px-3 py-2.5 text-xs text-text text-right">{tier.bank}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
