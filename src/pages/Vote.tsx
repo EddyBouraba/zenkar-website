@@ -23,7 +23,7 @@ const VOTE_SITES = [
   {
     name: 'Minecraft-MP.com',
     desc: 'Liste internationale avec classements actifs.',
-    url: 'https://minecraft-mp.com/server/359080',
+    url: 'https://minecraft-mp.com/server/359080/vote/',
     cooldown: '8h',
   },
   {
