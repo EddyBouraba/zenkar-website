@@ -43,7 +43,19 @@ function AppLayout() {
 
   if (MAINTENANCE) {
     if (loading) return <div className="min-h-screen bg-bg" />
-    if (!user?.is_admin && !AUTH_ROUTES.includes(location.pathname)) {
+    if (!user?.is_admin) {
+      if (AUTH_ROUTES.includes(location.pathname)) {
+        return (
+          <div className="min-h-screen bg-bg">
+            <Routes>
+              <Route path="/connexion" element={<GuestRoute><Login /></GuestRoute>} />
+              <Route path="/inscription" element={<GuestRoute><Register /></GuestRoute>} />
+              <Route path="/reinitialiser-mot-de-passe" element={<ResetPassword />} />
+              <Route path="*" element={<MaintenancePage />} />
+            </Routes>
+          </div>
+        )
+      }
       return <MaintenancePage />
     }
   }
