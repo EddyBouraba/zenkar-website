@@ -6,6 +6,7 @@ import NavBar from './components/layout/NavBar'
 import Footer from './components/layout/Footer'
 import Hero from './components/home/Hero'
 import ProtectedRoute from './components/ProtectedRoute'
+import MaintenancePage from './pages/MaintenancePage'
 import Home from './pages/Home'
 import Modes from './pages/Modes'
 import Boutique from './pages/Boutique'
@@ -24,6 +25,10 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import Classements from './pages/Classements'
 
+const MAINTENANCE = import.meta.env.VITE_MAINTENANCE_MODE === 'true'
+
+const AUTH_ROUTES = ['/connexion', '/inscription', '/reinitialiser-mot-de-passe']
+
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
   if (loading) return null
@@ -32,8 +37,16 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppLayout() {
+  const { user, loading } = useAuth()
   const location = useLocation()
   const isHome = location.pathname === '/'
+
+  if (MAINTENANCE) {
+    if (loading) return <div className="min-h-screen bg-bg" />
+    if (!user?.is_admin && !AUTH_ROUTES.includes(location.pathname)) {
+      return <MaintenancePage />
+    }
+  }
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
