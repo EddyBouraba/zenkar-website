@@ -5,6 +5,7 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL}
         VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY}
+        VITE_MAINTENANCE_MODE: ${VITE_MAINTENANCE_MODE:-false}
     ports:
       - "80:80"
     restart: unless-stopped
